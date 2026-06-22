@@ -1,4 +1,4 @@
-import { Trophy, Medal, Moon } from 'lucide-react';
+import { Medal } from 'lucide-react';
 import { EmptyState } from './EmptyState';
 
 export type UserRank = {

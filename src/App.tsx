@@ -95,21 +95,21 @@ function AppContent() {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'jogos' },
-        (payload) => {
+        () => {
           fetchMatches();
         }
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'palpites' },
-        (payload) => {
+        () => {
           fetchLeaderboard();
         }
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'usuarios' },
-        (payload) => {
+        () => {
           fetchLeaderboard();
         }
       )
@@ -127,7 +127,7 @@ function AppContent() {
     }
   }, [currentUserId]);
 
-  const handleLogin = (userId: string, nomeGuerra: string) => {
+  const handleLogin = (userId: string, _nomeGuerra: string) => {
     setCurrentUserId(userId);
     navigate('/dashboard');
   };
