@@ -8,34 +8,34 @@ import { supabase } from './lib/supabaseclient';
 
 function AppContent() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  
+
   // Data States
   const [matches, setMatches] = useState<Match[]>([]);
   const [guesses, setGuesses] = useState<Record<string, Guess>>({});
   const [savedGuesses, setSavedGuesses] = useState<Record<string, Guess>>({});
   const [leaderboard, setLeaderboard] = useState<UserRank[]>([]);
-  
+
   // UI states
   const [isLoadingMatches, setIsLoadingMatches] = useState(true);
   const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const navigate = useNavigate();
 
   const fetchMatches = async () => {
     setIsLoadingMatches(true);
-    
+
     const { data, error } = await supabase
       .from('jogos')
       .select('*')
       .order('data_hora', { ascending: true })
       .limit(10);
-      
+
     if (!error && data) {
       const formattedMatches: Match[] = data.map(j => ({
         id: j.id,
         timeA: j.time_a,
-        timeAFlag: '🏁', 
+        timeAFlag: '🏁',
         timeB: j.time_b,
         timeBFlag: '🏁',
         date: new Date(j.data_hora),
@@ -55,7 +55,7 @@ function AppContent() {
     const { data, error } = await supabase
       .from('usuarios')
       .select('id, nome_guerra, pontos_legado, palpites(pontos_ganhos)');
-      
+
     if (!error && data) {
       const ranks: UserRank[] = data.map((u: any) => {
         const palpitesPoints = u.palpites ? u.palpites.reduce((acc: number, p: any) => acc + (p.pontos_ganhos || 0), 0) : 0;
@@ -76,7 +76,7 @@ function AppContent() {
       .from('palpites')
       .select('jogo_id, palpite_a, palpite_b')
       .eq('usuario_id', userId);
-      
+
     if (!error && data) {
       const newGuesses: Record<string, Guess> = {};
       data.forEach(p => {
@@ -131,7 +131,7 @@ function AppContent() {
     setCurrentUserId(userId);
     navigate('/dashboard');
   };
-  
+
   const handleLogout = () => {
     setCurrentUserId(null);
     setGuesses({});
@@ -151,13 +151,13 @@ function AppContent() {
 
   const handleSaveGuesses = async () => {
     if (!currentUserId) return;
-    
+
     if (!window.confirm("Tem certeza que deseja registrar esses palpites? Após a confirmação, eles não poderão ser alterados.")) {
       return;
     }
-    
+
     setIsSubmitting(true);
-    
+
     // Prepare upserts
     const payload = Object.entries(guesses).map(([matchId, guess]) => {
       if (guess.scoreA === '' || guess.scoreB === '') return null;
@@ -167,13 +167,13 @@ function AppContent() {
         palpite_a: guess.scoreA as number,
         palpite_b: guess.scoreB as number
       };
-    }).filter(Boolean) as any[]; 
-    
+    }).filter(Boolean) as any[];
+
     if (payload.length > 0) {
       const { error } = await supabase
         .from('palpites')
         .upsert(payload, { onConflict: 'usuario_id,jogo_id' });
-        
+
       if (!error) {
         alert('Palpites salvos com sucesso!');
         await fetchUserGuesses(currentUserId);
@@ -184,24 +184,24 @@ function AppContent() {
         alert('Erro ao salvar palpites: ' + error.message);
       }
     }
-    
+
     setIsSubmitting(false);
   };
 
   return (
     <Routes>
-      <Route 
-        path="/" 
+      <Route
+        path="/"
         element={
           currentUserId ? (
             <Navigate to="/dashboard" replace />
           ) : (
             <AuthForm onLogin={handleLogin} />
           )
-        } 
+        }
       />
-      <Route 
-        path="/dashboard" 
+      <Route
+        path="/dashboard"
         element={
           currentUserId ? (
             <Layout currentUserId={currentUserId} onLogout={handleLogout}>
@@ -212,9 +212,9 @@ function AppContent() {
                     <p className="text-gray-400">Carregando jogos...</p>
                   </div>
                 ) : (
-                  <MatchGrid 
-                    matches={matches} 
-                    guesses={guesses} 
+                  <MatchGrid
+                    matches={matches}
+                    guesses={guesses}
                     savedGuesses={savedGuesses}
                     onGuessChange={handleGuessChange}
                     onSave={handleSaveGuesses}
@@ -226,17 +226,17 @@ function AppContent() {
           ) : (
             <Navigate to="/" replace />
           )
-        } 
+        }
       />
-      <Route 
-        path="/leaderboard" 
+      <Route
+        path="/leaderboard"
         element={
           currentUserId ? (
             <Layout currentUserId={currentUserId} onLogout={handleLogout}>
               <div className="py-4 md:py-8 h-full">
-                <LeaderboardPodium 
-                  users={leaderboard} 
-                  currentUserId={currentUserId} 
+                <LeaderboardPodium
+                  users={leaderboard}
+                  currentUserId={currentUserId}
                   isLoading={isLoadingLeaderboard}
                 />
               </div>
@@ -244,7 +244,7 @@ function AppContent() {
           ) : (
             <Navigate to="/" replace />
           )
-        } 
+        }
       />
     </Routes>
   );
@@ -252,7 +252,7 @@ function AppContent() {
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/-App-Bolao-/">
       <AppContent />
     </BrowserRouter>
   );
