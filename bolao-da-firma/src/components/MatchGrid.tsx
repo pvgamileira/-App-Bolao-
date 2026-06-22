@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { EmptyState } from './EmptyState';
+import { supabase } from '../lib/supabaseclient';
 
 export type Match = {
   id: string;
@@ -31,13 +32,55 @@ type MatchGridProps = {
 
 export function MatchGrid({ matches, guesses, savedGuesses = {}, onGuessChange, onSave, isSubmitting = false }: MatchGridProps) {
   const [activeTab, setActiveTab] = useState<'today' | 'future'>('today');
-  
-  const localTodayStr = new Date().toISOString().split('T')[0];
+  const [usersList, setUsersList] = useState<{id: string, nome_guerra: string}[]>([]);
+  const [selectedPeerId, setSelectedPeerId] = useState<string>('');
+  const [peerGuesses, setPeerGuesses] = useState<Record<string, {palpite_a: number, palpite_b: number}>>({});
 
-  const filteredMatches = matches.filter(match => {
-    const iso = match.date.toISOString();
-    return activeTab === 'today' ? iso.startsWith(localTodayStr) : iso > `${localTodayStr}T23:59:59Z`;
-  });
+  useEffect(() => {
+    async function fetchUsers() {
+      const { data } = await supabase
+        .from('usuarios')
+        .select('id, nome_guerra')
+        .order('nome_guerra', { ascending: true });
+      if (data) {
+        setUsersList(data);
+      }
+    }
+    fetchUsers();
+  }, []);
+
+  useEffect(() => {
+    async function fetchPeerGuesses() {
+      if (!selectedPeerId) {
+        setPeerGuesses({});
+        return;
+      }
+      const { data } = await supabase
+        .from('palpites')
+        .select('jogo_id, palpite_a, palpite_b')
+        .eq('usuario_id', selectedPeerId);
+      
+      if (data) {
+        const guessesMap: Record<string, {palpite_a: number, palpite_b: number}> = {};
+        data.forEach(g => {
+          guessesMap[g.jogo_id] = { palpite_a: g.palpite_a, palpite_b: g.palpite_b };
+        });
+        setPeerGuesses(guessesMap);
+      }
+    }
+    fetchPeerGuesses();
+  }, [selectedPeerId]);
+  
+  let filteredMatches: Match[] = [];
+  if (matches.length > 0) {
+    const firstMatchTime = matches[0].date.getTime();
+    const sixteenHoursInMs = 16 * 60 * 60 * 1000;
+    
+    filteredMatches = matches.filter(match => {
+      const isCurrentBlock = (match.date.getTime() - firstMatchTime) < sixteenHoursInMs;
+      return activeTab === 'today' ? isCurrentBlock : !isCurrentBlock;
+    });
+  }
 
   const hasPendingMatches = filteredMatches.some(m => m.status === 'SCHEDULED' && !savedGuesses[m.id]);
 
@@ -65,6 +108,20 @@ export function MatchGrid({ matches, guesses, savedGuesses = {}, onGuessChange, 
         >
           Jogos Futuros
         </button>
+      </div>
+
+      {/* Peer Select Dropdown */}
+      <div className="mb-6">
+        <select
+          value={selectedPeerId}
+          onChange={(e) => setSelectedPeerId(e.target.value)}
+          className="w-full bg-surface border border-gray-700 rounded-xl py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+        >
+          <option value="">🔍 Secar palpite de...</option>
+          {usersList.map(user => (
+            <option key={user.id} value={user.id}>{user.nome_guerra}</option>
+          ))}
+        </select>
       </div>
 
       {/* Matches List */}
@@ -166,6 +223,14 @@ export function MatchGrid({ matches, guesses, savedGuesses = {}, onGuessChange, 
                     <span className="font-semibold text-sm">{match.timeB}</span>
                   </div>
                 </div>
+
+                {selectedPeerId && peerGuesses[match.id] && (
+                  <div className="mx-6 mb-6">
+                    <div className="bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-slate-300 rounded-lg p-2 text-xs flex items-center justify-center gap-1 font-semibold">
+                      👥 Palpite de {usersList.find(u => u.id === selectedPeerId)?.nome_guerra}: {peerGuesses[match.id].palpite_a} x {peerGuesses[match.id].palpite_b}
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })

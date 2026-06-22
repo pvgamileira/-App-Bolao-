@@ -15,11 +15,13 @@ export function AuthForm({ onLogin }: { onLogin: (userId: string, nomeGuerra: st
     setError('');
     setIsLoading(true);
 
+    const normalizedName = nomeGuerra.trim().toUpperCase();
+
     try {
       if (activeTab === 'CRIAR') {
         const { data, error: insertError } = await supabase
           .from('usuarios')
-          .insert([{ nome_guerra: nomeGuerra.trim(), pin: pin.trim() || null }])
+          .insert([{ nome_guerra: normalizedName, pin: pin.trim() || null }])
           .select('id')
           .single();
 
@@ -30,14 +32,14 @@ export function AuthForm({ onLogin }: { onLogin: (userId: string, nomeGuerra: st
             setError('Erro ao criar conta: ' + insertError.message);
           }
         } else if (data) {
-          onLogin(data.id, nomeGuerra.trim());
+          onLogin(data.id, normalizedName);
         }
       } else {
         // ENTRAR
         const { data, error: fetchError } = await supabase
           .from('usuarios')
           .select('id, pin')
-          .eq('nome_guerra', nomeGuerra.trim())
+          .eq('nome_guerra', normalizedName)
           .single();
 
         if (fetchError || !data) {
@@ -47,7 +49,7 @@ export function AuthForm({ onLogin }: { onLogin: (userId: string, nomeGuerra: st
           if (data.pin && data.pin !== pin.trim()) {
             setError('Nome de guerra não encontrado ou PIN incorreto.');
           } else {
-            onLogin(data.id, nomeGuerra.trim());
+            onLogin(data.id, normalizedName);
           }
         }
       }
