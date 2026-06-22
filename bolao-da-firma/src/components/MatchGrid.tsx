@@ -8,6 +8,8 @@ export type Match = {
   timeBFlag: string;
   date: Date;
   status: 'SCHEDULED' | 'LIVE' | 'FINISHED';
+  placarOficialA?: number;
+  placarOficialB?: number;
 };
 
 export type Guess = {
@@ -29,7 +31,7 @@ export function MatchGrid({ matches, guesses, onGuessChange, onSave, isSubmittin
       {/* Matches List */}
       <div className="space-y-6 flex-1">
         {matches.length === 0 ? (
-          <EmptyState message="Nenhum jogo disponível para hoje." />
+          <EmptyState message="Aguardando sincronização da API ou nenhum jogo próximo." />
         ) : (
           matches.map(match => {
             const guess = guesses[match.id] || { scoreA: '', scoreB: '' };
@@ -63,27 +65,39 @@ export function MatchGrid({ matches, guesses, onGuessChange, onSave, isSubmittin
 
                   {/* Scores */}
                   <div className="flex items-center gap-4 flex-1 justify-center">
-                    <input
-                      type="number"
-                      min="0"
-                      max="99"
-                      value={guess.scoreA}
-                      disabled={match.status !== 'SCHEDULED' || isSubmitting}
-                      onChange={(e) => onGuessChange(match.id, 'A', e.target.value === '' ? '' : parseInt(e.target.value, 10))}
-                      className="w-14 h-16 bg-[#1f364d] text-white text-center text-2xl font-bold rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:bg-background transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    />
+                    {match.status === 'FINISHED' && match.placarOficialA !== undefined ? (
+                      <div className="w-14 h-16 bg-[#0f1c29] text-gray-300 text-center text-2xl font-bold rounded-xl flex items-center justify-center opacity-75 border border-gray-700">
+                        {match.placarOficialA}
+                      </div>
+                    ) : (
+                      <input
+                        type="number"
+                        min="0"
+                        max="99"
+                        value={guess.scoreA}
+                        disabled={match.status !== 'SCHEDULED' || isSubmitting}
+                        onChange={(e) => onGuessChange(match.id, 'A', e.target.value === '' ? '' : parseInt(e.target.value, 10))}
+                        className="w-14 h-16 bg-[#1f364d] text-white text-center text-2xl font-bold rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:bg-background transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      />
+                    )}
                     
                     <span className="text-gold font-bold text-xl">X</span>
                     
-                    <input
-                      type="number"
-                      min="0"
-                      max="99"
-                      value={guess.scoreB}
-                      disabled={match.status !== 'SCHEDULED' || isSubmitting}
-                      onChange={(e) => onGuessChange(match.id, 'B', e.target.value === '' ? '' : parseInt(e.target.value, 10))}
-                      className="w-14 h-16 bg-[#1f364d] text-white text-center text-2xl font-bold rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:bg-background transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    />
+                    {match.status === 'FINISHED' && match.placarOficialB !== undefined ? (
+                      <div className="w-14 h-16 bg-[#0f1c29] text-gray-300 text-center text-2xl font-bold rounded-xl flex items-center justify-center opacity-75 border border-gray-700">
+                        {match.placarOficialB}
+                      </div>
+                    ) : (
+                      <input
+                        type="number"
+                        min="0"
+                        max="99"
+                        value={guess.scoreB}
+                        disabled={match.status !== 'SCHEDULED' || isSubmitting}
+                        onChange={(e) => onGuessChange(match.id, 'B', e.target.value === '' ? '' : parseInt(e.target.value, 10))}
+                        className="w-14 h-16 bg-[#1f364d] text-white text-center text-2xl font-bold rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:bg-background transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      />
+                    )}
                   </div>
 
                   {/* Team B */}

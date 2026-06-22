@@ -1,93 +1,70 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.6';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 serve(async (req) => {
-  // Handle CORS preflight
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
-  }
-
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-    const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!; // Ignora RLS para escrita de background
 
-    if (!supabaseUrl || !supabaseServiceRoleKey) {
-      throw new Error('Missing Supabase environment variables');
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Bate no endpoint público e 100% gratuito do repositório
+    const response = await fetch('https://worldcup26.ir/get/games', {
+      method: 'GET'
+    });
+
+    if (!response.ok) throw new Error(`Erro ao conectar com a API WorldCup26: ${response.status}`);
+    const data = await response.json();
+
+    // A API retorna um objeto contendo um array em data.games
+    if (!data.games || data.games.length === 0) {
+      return new Response(JSON.stringify({ success: true, message: 'Nenhum jogo encontrado na API.' }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
-    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+    // Mapeia o JSON da nova API para as colunas do seu banco PostgreSQL
+    const matchesToUpsert = data.games.map((game: any) => {
+      let mappedStatus = 'SCHEDULED';
 
-    // Mocking an external API call (e.g., API-Football)
-    // In a real scenario, this would be: 
-    // const response = await fetch('https://v3.football.api-sports.io/fixtures?live=all', { headers: { 'x-apisports-key': API_KEY } })
-    const mockApiResponse = {
-      response: [
-        {
-          fixture: { id: 1, status: { short: '2H' } }, // LIVE
-          teams: { home: { name: 'Brasil' }, away: { name: 'Alemanha' } },
-          goals: { home: 2, away: 0 }
-        },
-        {
-          fixture: { id: 2, status: { short: 'FT' } }, // FINISHED
-          teams: { home: { name: 'França' }, away: { name: 'Argentina' } },
-          goals: { home: 1, away: 1 }
-        }
-      ]
-    };
-
-    const matchesToUpdate = mockApiResponse.response;
-    const updatePromises = [];
-
-    for (const match of matchesToUpdate) {
-      // Map API status to our status
-      let status = 'SCHEDULED';
-      if (['1H', '2H', 'HT', 'ET', 'BT', 'P', 'SUSP', 'INT'].includes(match.fixture.status.short)) {
-        status = 'LIVE';
-      } else if (['FT', 'AET', 'PEN'].includes(match.fixture.status.short)) {
-        status = 'FINISHED';
+      // Tradução dos status da nova API para o seu motor de pontos
+      if (game.finished === 'TRUE' || game.finished === true) {
+        mappedStatus = 'FINISHED';
+      } else if (game.time_elapsed !== 'notstarted') {
+        mappedStatus = 'LIVE';
       }
 
-      const scoreA = match.goals.home !== null ? match.goals.home : null;
-      const scoreB = match.goals.away !== null ? match.goals.away : null;
+      // Tratamento de datas (ajusta o formato MM/DD/YYYY para formato ISO aceito pelo Postgres)
+      const dateParts = game.local_date.split(' ');
+      const dayMonthYear = dateParts[0].split('/');
+      const formattedDate = `${dayMonthYear[2]}-${dayMonthYear[0]}-${dayMonthYear[1]}T${dateParts[1]}:00Z`;
 
-      // Defensive check: we only update score if it's available. If it's null, we don't overwrite if not explicitly required.
-      // We will look up the team by name or ideally an external API ID in a real system.
-      // For this spec, we update by team names (which is brittle but works for demo).
-      
-      const updateData: any = { status };
-      if (scoreA !== null) updateData.placar_oficial_a = scoreA;
-      if (scoreB !== null) updateData.placar_oficial_b = scoreB;
+      return {
+        api_id: parseInt(game.id),
+        time_a: game.home_team_name_en,
+        time_b: game.away_team_name_en,
+        data_hora: formattedDate,
+        placar_oficial_a: game.home_score !== 'null' ? parseInt(game.home_score) : null,
+        placar_oficial_b: game.away_score !== 'null' ? parseInt(game.away_score) : null,
+        status: mappedStatus
+      };
+    });
 
-      const promise = supabase
-        .from('jogos')
-        .update(updateData)
-        .eq('time_a', match.teams.home.name)
-        .eq('time_b', match.teams.away.name);
+    // Salva ou atualiza os jogos de uma vez só, blindando contra duplicidade pelo api_id
+    const { error } = await supabase
+      .from('jogos')
+      .upsert(matchesToUpsert, { onConflict: 'api_id' });
 
-      updatePromises.push(promise);
-    }
+    if (error) throw error;
 
-    await Promise.all(updatePromises);
+    return new Response(JSON.stringify({ success: true, partidas_sincronizadas: matchesToUpsert.length }), {
+      headers: { 'Content-Type': 'application/json' }
+    });
 
-    return new Response(
-      JSON.stringify({ message: 'Sync completed successfully', processed: matchesToUpdate.length }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      }
-    );
-  } catch (error) {
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
-      }
-    );
+  } catch (err: any) {
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
-});
+})

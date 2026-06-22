@@ -1,0 +1,1 @@
+ALTER TABLE public.jogos ADD COLUMN IF NOT EXISTS api_id INT UNIQUE;

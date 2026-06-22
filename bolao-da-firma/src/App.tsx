@@ -24,28 +24,33 @@ function AppContent() {
   const fetchMatches = async () => {
     setIsLoadingMatches(true);
     
-    // Dynamic Date Handling for today
-    const today = new Date();
-    const startOfDay = new Date(today.setHours(0, 0, 0, 0)).toISOString();
-    const endOfDay = new Date(today.setHours(23, 59, 59, 999)).toISOString();
-
     const { data, error } = await supabase
       .from('jogos')
       .select('*')
-      .gte('data_hora', startOfDay)
-      .lte('data_hora', endOfDay)
       .order('data_hora', { ascending: true });
       
     if (!error && data) {
-      const formattedMatches: Match[] = data.map(j => ({
-        id: j.id,
-        timeA: j.time_a,
-        timeAFlag: '🏁', 
-        timeB: j.time_b,
-        timeBFlag: '🏁',
-        date: new Date(j.data_hora),
-        status: j.status || 'SCHEDULED'
-      }));
+      const todayStr = '2026-06-22';
+      const formattedMatches: Match[] = data
+        .filter(j => {
+          const localDate = new Date(j.data_hora);
+          const year = localDate.getFullYear();
+          const month = String(localDate.getMonth() + 1).padStart(2, '0');
+          const day = String(localDate.getDate()).padStart(2, '0');
+          const localStr = `${year}-${month}-${day}`;
+          return localStr === todayStr || j.data_hora.includes(todayStr);
+        })
+        .map(j => ({
+          id: j.id,
+          timeA: j.time_a,
+          timeAFlag: '🏁', 
+          timeB: j.time_b,
+          timeBFlag: '🏁',
+          date: new Date(j.data_hora),
+          status: j.status || 'SCHEDULED',
+          placarOficialA: j.placar_oficial_a,
+          placarOficialB: j.placar_oficial_b
+        }));
       setMatches(formattedMatches);
     }
     setIsLoadingMatches(false);
@@ -183,60 +188,29 @@ function AppContent() {
   };
 
   return (
-    <Layout currentUserId={currentUserId} onLogout={handleLogout}>
-      <Routes>
-        <Route 
-          path="/" 
-          element={
-            currentUserId ? (
-              <Navigate to="/dashboard" replace />
-            ) : (
-              <AuthForm onLogin={handleLogin} />
-            )
-          } 
-        />
-        <Route 
-          path="/dashboard" 
-          element={
-            currentUserId ? (
-              <div className="md:grid md:grid-cols-[1fr_350px] md:gap-8 h-full">
-                <div className="py-4 md:py-8 h-full">
-                  {isLoadingMatches && matches.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-full space-y-4">
-                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-                      <p className="text-gray-400">Carregando jogos...</p>
-                    </div>
-                  ) : (
-                    <MatchGrid 
-                      matches={matches} 
-                      guesses={guesses} 
-                      onGuessChange={handleGuessChange}
-                      onSave={handleSaveGuesses}
-                      isSubmitting={isSubmitting}
-                    />
-                  )}
-                </div>
-                {/* Desktop sidebar */}
-                <div className="hidden md:block bg-surface/30 border-l border-gray-800 shadow-2xl h-[calc(100vh-80px)] overflow-y-auto">
-                   <LeaderboardPodium 
-                      users={leaderboard} 
-                      currentUserId={currentUserId} 
-                      isLoading={isLoadingLeaderboard}
-                   />
-                </div>
-              </div>
-            ) : (
-              <Navigate to="/" replace />
-            )
-          } 
-        />
-        <Route 
-          path="/leaderboard" 
-          element={
-            currentUserId ? (
-               <div className="md:grid md:grid-cols-[1fr_350px] md:gap-8 h-full">
-                <div className="hidden md:block py-4 md:py-8 h-full">
-                  {/* Keep match grid on left for desktop even if /leaderboard is visited */}
+    <Routes>
+      <Route 
+        path="/" 
+        element={
+          currentUserId ? (
+            <Navigate to="/dashboard" replace />
+          ) : (
+            <AuthForm onLogin={handleLogin} />
+          )
+        } 
+      />
+      <Route 
+        path="/dashboard" 
+        element={
+          currentUserId ? (
+            <Layout currentUserId={currentUserId} onLogout={handleLogout}>
+              <div className="py-4 md:py-8 h-full">
+                {isLoadingMatches && matches.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full space-y-4">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                    <p className="text-gray-400">Carregando jogos...</p>
+                  </div>
+                ) : (
                   <MatchGrid 
                     matches={matches} 
                     guesses={guesses} 
@@ -244,23 +218,33 @@ function AppContent() {
                     onSave={handleSaveGuesses}
                     isSubmitting={isSubmitting}
                   />
-                </div>
-                {/* Mobile view or desktop sidebar */}
-                <div className="bg-surface/30 md:border-l md:border-gray-800 md:shadow-2xl h-[calc(100vh-80px)] overflow-y-auto">
-                   <LeaderboardPodium 
-                      users={leaderboard} 
-                      currentUserId={currentUserId} 
-                      isLoading={isLoadingLeaderboard}
-                   />
-                </div>
+                )}
               </div>
-            ) : (
-              <Navigate to="/" replace />
-            )
-          } 
-        />
-      </Routes>
-    </Layout>
+            </Layout>
+          ) : (
+            <Navigate to="/" replace />
+          )
+        } 
+      />
+      <Route 
+        path="/leaderboard" 
+        element={
+          currentUserId ? (
+            <Layout currentUserId={currentUserId} onLogout={handleLogout}>
+              <div className="py-4 md:py-8 h-full">
+                <LeaderboardPodium 
+                  users={leaderboard} 
+                  currentUserId={currentUserId} 
+                  isLoading={isLoadingLeaderboard}
+                />
+              </div>
+            </Layout>
+          ) : (
+            <Navigate to="/" replace />
+          )
+        } 
+      />
+    </Routes>
   );
 }
 
