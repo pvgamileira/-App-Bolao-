@@ -12,6 +12,7 @@ function AppContent() {
   // Data States
   const [matches, setMatches] = useState<Match[]>([]);
   const [guesses, setGuesses] = useState<Record<string, Guess>>({});
+  const [savedGuesses, setSavedGuesses] = useState<Record<string, Guess>>({});
   const [leaderboard, setLeaderboard] = useState<UserRank[]>([]);
   
   // UI states
@@ -27,30 +28,23 @@ function AppContent() {
     const { data, error } = await supabase
       .from('jogos')
       .select('*')
-      .order('data_hora', { ascending: true });
+      .order('data_hora', { ascending: true })
+      .limit(10);
       
     if (!error && data) {
-      const todayStr = '2026-06-22';
-      const formattedMatches: Match[] = data
-        .filter(j => {
-          const localDate = new Date(j.data_hora);
-          const year = localDate.getFullYear();
-          const month = String(localDate.getMonth() + 1).padStart(2, '0');
-          const day = String(localDate.getDate()).padStart(2, '0');
-          const localStr = `${year}-${month}-${day}`;
-          return localStr === todayStr || j.data_hora.includes(todayStr);
-        })
-        .map(j => ({
-          id: j.id,
-          timeA: j.time_a,
-          timeAFlag: '🏁', 
-          timeB: j.time_b,
-          timeBFlag: '🏁',
-          date: new Date(j.data_hora),
-          status: j.status || 'SCHEDULED',
-          placarOficialA: j.placar_oficial_a,
-          placarOficialB: j.placar_oficial_b
-        }));
+      const formattedMatches: Match[] = data.map(j => ({
+        id: j.id,
+        timeA: j.time_a,
+        timeAFlag: '🏁', 
+        timeB: j.time_b,
+        timeBFlag: '🏁',
+        date: new Date(j.data_hora),
+        status: j.status || 'SCHEDULED',
+        placarOficialA: j.placar_oficial_a,
+        placarOficialB: j.placar_oficial_b,
+        logoA: j.logo_a,
+        logoB: j.logo_b
+      }));
       setMatches(formattedMatches);
     }
     setIsLoadingMatches(false);
@@ -89,6 +83,7 @@ function AppContent() {
         newGuesses[p.jogo_id] = { scoreA: p.palpite_a, scoreB: p.palpite_b };
       });
       setGuesses(newGuesses);
+      setSavedGuesses(newGuesses);
     }
   };
 
@@ -140,6 +135,7 @@ function AppContent() {
   const handleLogout = () => {
     setCurrentUserId(null);
     setGuesses({});
+    setSavedGuesses({});
     navigate('/');
   };
 
@@ -155,6 +151,10 @@ function AppContent() {
 
   const handleSaveGuesses = async () => {
     if (!currentUserId) return;
+    
+    if (!window.confirm("Tem certeza que deseja registrar esses palpites? Após a confirmação, eles não poderão ser alterados.")) {
+      return;
+    }
     
     setIsSubmitting(true);
     
@@ -176,6 +176,7 @@ function AppContent() {
         
       if (!error) {
         alert('Palpites salvos com sucesso!');
+        await fetchUserGuesses(currentUserId);
         if (window.innerWidth < 768) {
           navigate('/leaderboard');
         }
@@ -214,6 +215,7 @@ function AppContent() {
                   <MatchGrid 
                     matches={matches} 
                     guesses={guesses} 
+                    savedGuesses={savedGuesses}
                     onGuessChange={handleGuessChange}
                     onSave={handleSaveGuesses}
                     isSubmitting={isSubmitting}
