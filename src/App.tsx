@@ -73,13 +73,13 @@ function AppContent() {
   const fetchUserGuesses = async (userId: string) => {
     const { data, error } = await supabase
       .from('palpites')
-      .select('jogo_id, palpite_a, palpite_b')
+      .select('jogo_id, palpite_a, palpite_b, pontos_ganhos')
       .eq('usuario_id', userId);
 
     if (!error && data) {
       const newGuesses: Record<string, Guess> = {};
       data.forEach(p => {
-        newGuesses[p.jogo_id] = { scoreA: p.palpite_a, scoreB: p.palpite_b };
+        newGuesses[p.jogo_id] = { scoreA: p.palpite_a, scoreB: p.palpite_b, points: p.pontos_ganhos };
       });
       setGuesses(newGuesses);
       setSavedGuesses(newGuesses);

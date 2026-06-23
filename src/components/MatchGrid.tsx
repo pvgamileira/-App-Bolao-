@@ -19,6 +19,7 @@ export type Match = {
 export type Guess = {
   scoreA: number | '';
   scoreB: number | '';
+  points?: number | null;
 };
 
 type MatchGridProps = {
@@ -102,6 +103,9 @@ export function MatchGrid({ matches, guesses, savedGuesses = {}, onGuessChange, 
 
   const hasPendingMatches = filteredMatches.some(m => m.status === 'SCHEDULED' && !savedGuesses[m.id]);
 
+  const scheduledMatchesCount = filteredMatches.filter(m => m.status === 'SCHEDULED' || m.status === 'LIVE').length;
+  const potentialPoints = scheduledMatchesCount * 5;
+
   return (
     <div className="flex flex-col h-full pb-20 md:pb-4 relative">
       {/* Tabs Header */}
@@ -127,6 +131,24 @@ export function MatchGrid({ matches, guesses, savedGuesses = {}, onGuessChange, 
           Todos os Jogos
         </button>
       </div>
+
+      {/* Potencial da Rodada Banner */}
+      {potentialPoints > 0 && (
+        <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-xl p-3 mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">💰</span>
+            <span className="text-sm font-semibold text-primary/90">
+              Potencial Máximo: <strong className="text-primary text-base">{potentialPoints} pontos</strong>
+            </span>
+          </div>
+          <button 
+            onClick={() => window.alert(`Você tem ${scheduledMatchesCount} jogo(s) pendente(s) nesta tela.\n\nComo você ganha no máximo 5 pontos por palpite perfeito (acertando o placar exato), há um total de ${potentialPoints} pontos em jogo!\n\nBoa sorte!`)}
+            className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold hover:bg-primary/30 transition-colors"
+          >
+            ?
+          </button>
+        </div>
+      )}
 
       {activeTab === 'all_matches' && (
         <div className="flex gap-4 mb-6">
@@ -279,8 +301,20 @@ export function MatchGrid({ matches, guesses, savedGuesses = {}, onGuessChange, 
 
                 {match.status === 'FINISHED' && savedGuesses[match.id] && savedGuesses[match.id].scoreA !== '' && (
                   <div className="mx-6 mb-2">
-                    <div className="bg-primary/20 border border-primary/30 text-primary rounded-lg p-2 text-xs flex items-center justify-center gap-1 font-bold">
-                      🎯 Seu palpite registrado: {savedGuesses[match.id].scoreA} x {savedGuesses[match.id].scoreB}
+                    <div className="bg-[#1f364d] border border-gray-700 text-gray-300 rounded-lg p-3 flex items-center justify-between text-sm font-bold shadow-inner">
+                      <div className="flex items-center gap-2">
+                        <span>🎯 Seu palpite:</span>
+                        <span className="bg-[#0f1c29] px-3 py-1 rounded text-white">{savedGuesses[match.id].scoreA} x {savedGuesses[match.id].scoreB}</span>
+                      </div>
+                      {savedGuesses[match.id].points !== undefined && savedGuesses[match.id].points !== null && (
+                        <div className={`px-3 py-1 rounded shadow-sm ${
+                          (savedGuesses[match.id].points ?? 0) > 0 
+                            ? 'bg-primary text-background' 
+                            : 'bg-gray-700 text-gray-400'
+                        }`}>
+                          +{(savedGuesses[match.id].points ?? 0)} pts
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
