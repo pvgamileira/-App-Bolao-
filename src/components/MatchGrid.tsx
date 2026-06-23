@@ -101,7 +101,20 @@ export function MatchGrid({ matches, guesses, savedGuesses = {}, onGuessChange, 
     });
   }
 
-  const hasPendingMatches = filteredMatches.some(m => m.status === 'SCHEDULED' && !savedGuesses[m.id]);
+  const hasPendingEdits = filteredMatches.some(m => {
+    if (m.status !== 'SCHEDULED') return false;
+    const currentGuess = guesses[m.id];
+    const savedGuess = savedGuesses[m.id];
+    if (!currentGuess) return false;
+    
+    // If no saved guess, any filled input is a pending edit
+    if (!savedGuess) {
+      return currentGuess.scoreA !== '' || currentGuess.scoreB !== '';
+    }
+    
+    // If saved guess exists, check if inputs differ from saved
+    return currentGuess.scoreA !== savedGuess.scoreA || currentGuess.scoreB !== savedGuess.scoreB;
+  });
 
   const scheduledMatchesCount = filteredMatches.filter(m => m.status === 'SCHEDULED' || m.status === 'LIVE').length;
   const potentialPoints = scheduledMatchesCount * 5;
@@ -251,10 +264,10 @@ export function MatchGrid({ matches, guesses, savedGuesses = {}, onGuessChange, 
                         min="0"
                         max="99"
                         value={guess.scoreA}
-                        disabled={isMatchTbd || match.status !== 'SCHEDULED' || !!savedGuesses[match.id] || isSubmitting}
+                        disabled={isMatchTbd || match.status !== 'SCHEDULED' || isSubmitting}
                         onChange={(e) => onGuessChange(match.id, 'A', e.target.value === '' ? '' : parseInt(e.target.value, 10))}
                         className={`w-14 h-16 text-center text-2xl font-bold rounded-xl transition-all ${
-                          isMatchTbd || match.status !== 'SCHEDULED' || !!savedGuesses[match.id]
+                          isMatchTbd || match.status !== 'SCHEDULED'
                             ? 'bg-[#0f1c29] text-gray-300 opacity-75 border border-gray-700 cursor-not-allowed'
                             : 'bg-[#1f364d] text-white focus:outline-none focus:ring-2 focus:ring-primary focus:bg-background'
                         }`}
@@ -273,10 +286,10 @@ export function MatchGrid({ matches, guesses, savedGuesses = {}, onGuessChange, 
                         min="0"
                         max="99"
                         value={guess.scoreB}
-                        disabled={isMatchTbd || match.status !== 'SCHEDULED' || !!savedGuesses[match.id] || isSubmitting}
+                        disabled={isMatchTbd || match.status !== 'SCHEDULED' || isSubmitting}
                         onChange={(e) => onGuessChange(match.id, 'B', e.target.value === '' ? '' : parseInt(e.target.value, 10))}
                         className={`w-14 h-16 text-center text-2xl font-bold rounded-xl transition-all ${
-                          isMatchTbd || match.status !== 'SCHEDULED' || !!savedGuesses[match.id]
+                          isMatchTbd || match.status !== 'SCHEDULED'
                             ? 'bg-[#0f1c29] text-gray-300 opacity-75 border border-gray-700 cursor-not-allowed'
                             : 'bg-[#1f364d] text-white focus:outline-none focus:ring-2 focus:ring-primary focus:bg-background'
                         }`}
@@ -333,7 +346,7 @@ export function MatchGrid({ matches, guesses, savedGuesses = {}, onGuessChange, 
       </div>
 
       {/* Floating/Sticky Action Button */}
-      {filteredMatches.length > 0 && hasPendingMatches && (
+      {filteredMatches.length > 0 && hasPendingEdits && (
         <div className="sticky bottom-0 left-0 right-0 py-4 mt-6 bg-gradient-to-t from-background via-background to-transparent z-10">
           <button
             onClick={onSave}
