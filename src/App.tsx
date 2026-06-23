@@ -252,7 +252,7 @@ function AppContent() {
 
 function App() {
   return (
-    <BrowserRouter basename="/-App-Bolao-/">
+    <BrowserRouter>
       <AppContent />
     </BrowserRouter>
   );
