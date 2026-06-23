@@ -86,3 +86,7 @@ CREATE TRIGGER trigger_update_points
 AFTER INSERT OR UPDATE ON public.jogos
 FOR EACH ROW
 EXECUTE FUNCTION update_user_points_on_match_finish();
+
+-- 1.4 Dummy update to force recalculation of existing points
+UPDATE public.jogos SET status = 'PENDING_RECALC' WHERE status = 'FINISHED';
+UPDATE public.jogos SET status = 'FINISHED' WHERE status = 'PENDING_RECALC';

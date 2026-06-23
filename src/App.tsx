@@ -28,8 +28,7 @@ function AppContent() {
     const { data, error } = await supabase
       .from('jogos')
       .select('*')
-      .order('data_hora', { ascending: true })
-      .limit(10);
+      .order('data_hora', { ascending: true });
 
     if (!error && data) {
       const formattedMatches: Match[] = data.map(j => ({
@@ -91,7 +90,8 @@ function AppContent() {
     fetchMatches();
     fetchLeaderboard();
 
-    const channel = supabase.channel('schema-db-changes')
+    const channelId = `schema-db-changes-${Date.now()}-${Math.random()}`;
+    const channel = supabase.channel(channelId)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'jogos' },

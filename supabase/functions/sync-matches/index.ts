@@ -8,13 +8,15 @@ serve(async (req) => {
         const supabase = createClient(supabaseUrl, supabaseKey);
 
         // 🌟 CÁLCULO DINÂMICO DE DATAS (Sem nunca mais hardcodar dias)
+        // Alterado para sempre buscar desde o início da Copa (11/06/2026) para sincronizar os jogos passados
+        const inicioCopa = new Date('2026-06-11T00:00:00Z');
         const hoje = new Date();
         const duasSemanasPraFrente = new Date();
         duasSemanasPraFrente.setDate(hoje.getDate() + 14);
 
         // Formata os objetos Date para o padrão YYYYMMDD exigido pela ESPN
         const formatESPN = (d: Date) => d.toISOString().split('T')[0].replace(/-/g, '');
-        const intervaloDatas = `${formatESPN(hoje)}-${formatESPN(duasSemanasPraFrente)}`;
+        const intervaloDatas = `${formatESPN(inicioCopa)}-${formatESPN(duasSemanasPraFrente)}`;
 
         // Monta a URL dinamicamente com a janela móvel de jogos
         const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=${intervaloDatas}`;

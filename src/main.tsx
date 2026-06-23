@@ -27,7 +27,13 @@ function ConfigurationError() {
   );
 }
 
-createRoot(document.getElementById('root')!).render(
+let root = (window as any).__reactRoot;
+if (!root) {
+  root = createRoot(document.getElementById('root')!);
+  (window as any).__reactRoot = root;
+}
+
+root.render(
   <StrictMode>
     <ThemeProvider>
       {isSupabaseConfigured ? <App /> : <ConfigurationError />}

@@ -31,7 +31,10 @@ type MatchGridProps = {
 };
 
 export function MatchGrid({ matches, guesses, savedGuesses = {}, onGuessChange, onSave, isSubmitting = false }: MatchGridProps) {
-  const [activeTab, setActiveTab] = useState<'today' | 'future'>('today');
+  const [activeTab, setActiveTab] = useState<'today' | 'all_matches'>('today');
+  const todayStr = new Date().toISOString().split('T')[0];
+  const [startDate, setStartDate] = useState<string>(todayStr);
+  const [endDate, setEndDate] = useState<string>(todayStr);
   const [usersList, setUsersList] = useState<{id: string, nome_guerra: string}[]>([]);
   const [selectedPeerId, setSelectedPeerId] = useState<string>('');
   const [peerGuesses, setPeerGuesses] = useState<Record<string, {palpite_a: number, palpite_b: number}>>({});
@@ -73,12 +76,27 @@ export function MatchGrid({ matches, guesses, savedGuesses = {}, onGuessChange, 
   
   let filteredMatches: Match[] = [];
   if (matches.length > 0) {
-    const firstMatchTime = matches[0].date.getTime();
-    const sixteenHoursInMs = 16 * 60 * 60 * 1000;
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0).getTime();
+    const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999).getTime();
     
     filteredMatches = matches.filter(match => {
-      const isCurrentBlock = (match.date.getTime() - firstMatchTime) < sixteenHoursInMs;
-      return activeTab === 'today' ? isCurrentBlock : !isCurrentBlock;
+      const matchTime = match.date.getTime();
+      
+      if (activeTab === 'today') {
+        return matchTime >= startOfToday && matchTime <= endOfToday;
+      } else {
+        let include = true;
+        if (startDate) {
+          const start = new Date(startDate + 'T00:00:00').getTime();
+          if (matchTime < start) include = false;
+        }
+        if (endDate) {
+          const end = new Date(endDate + 'T23:59:59.999').getTime();
+          if (matchTime > end) include = false;
+        }
+        return include;
+      }
     });
   }
 
@@ -99,16 +117,39 @@ export function MatchGrid({ matches, guesses, savedGuesses = {}, onGuessChange, 
           Jogos de Hoje
         </button>
         <button
-          onClick={() => setActiveTab('future')}
+          onClick={() => setActiveTab('all_matches')}
           className={`flex-1 py-3 text-sm font-bold rounded-lg transition-all ${
-            activeTab === 'future' 
+            activeTab === 'all_matches' 
               ? 'bg-primary text-background shadow-md' 
               : 'text-gray-400 hover:text-white'
           }`}
         >
-          Jogos Futuros
+          Todos os Jogos
         </button>
       </div>
+
+      {activeTab === 'all_matches' && (
+        <div className="flex gap-4 mb-6">
+          <div className="flex-1">
+            <label className="block text-xs font-semibold text-gray-400 mb-1">Data Inicial</label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="w-full bg-surface border border-gray-700 rounded-xl py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+            />
+          </div>
+          <div className="flex-1">
+            <label className="block text-xs font-semibold text-gray-400 mb-1">Data Final</label>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="w-full bg-surface border border-gray-700 rounded-xl py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+            />
+          </div>
+        </div>
+      )}
 
       {/* Peer Select Dropdown */}
       <div className="mb-6">
@@ -131,6 +172,14 @@ export function MatchGrid({ matches, guesses, savedGuesses = {}, onGuessChange, 
         ) : (
           filteredMatches.map(match => {
             const guess = guesses[match.id] || { scoreA: '', scoreB: '' };
+            const isTbd = (name: string) => {
+              if (!name) return true;
+              const lower = name.toLowerCase();
+              return lower.includes('group') || lower.includes('winner') || lower.includes('place') || lower.includes('round');
+            };
+            const tbdA = isTbd(match.timeA);
+            const tbdB = isTbd(match.timeB);
+            const isMatchTbd = tbdA || tbdB;
             
             return (
               <div key={match.id} className="bg-surface rounded-2xl overflow-hidden shadow-lg border border-gray-800">
@@ -157,13 +206,15 @@ export function MatchGrid({ matches, guesses, savedGuesses = {}, onGuessChange, 
                   {/* Team A */}
                   <div className="flex flex-col items-center flex-1">
                     <div className="w-16 h-16 rounded-full bg-background flex items-center justify-center mb-2 overflow-hidden border-2 border-gray-700">
-                      {match.logoA ? (
+                      {tbdA ? (
+                        <span className="text-3xl opacity-50">❓</span>
+                      ) : match.logoA ? (
                         <img src={match.logoA} alt={match.timeA} className="w-12 h-12 object-contain" />
                       ) : (
                         <span className="text-3xl">{match.timeAFlag}</span>
                       )}
                     </div>
-                    <span className="font-semibold text-sm">{match.timeA}</span>
+                    <span className="font-semibold text-sm text-center">{tbdA ? "A Definir" : match.timeA}</span>
                   </div>
 
                   {/* Scores */}
@@ -178,10 +229,10 @@ export function MatchGrid({ matches, guesses, savedGuesses = {}, onGuessChange, 
                         min="0"
                         max="99"
                         value={guess.scoreA}
-                        disabled={match.status !== 'SCHEDULED' || !!savedGuesses[match.id] || isSubmitting}
+                        disabled={isMatchTbd || match.status !== 'SCHEDULED' || !!savedGuesses[match.id] || isSubmitting}
                         onChange={(e) => onGuessChange(match.id, 'A', e.target.value === '' ? '' : parseInt(e.target.value, 10))}
                         className={`w-14 h-16 text-center text-2xl font-bold rounded-xl transition-all ${
-                          match.status !== 'SCHEDULED' || !!savedGuesses[match.id]
+                          isMatchTbd || match.status !== 'SCHEDULED' || !!savedGuesses[match.id]
                             ? 'bg-[#0f1c29] text-gray-300 opacity-75 border border-gray-700 cursor-not-allowed'
                             : 'bg-[#1f364d] text-white focus:outline-none focus:ring-2 focus:ring-primary focus:bg-background'
                         }`}
@@ -200,10 +251,10 @@ export function MatchGrid({ matches, guesses, savedGuesses = {}, onGuessChange, 
                         min="0"
                         max="99"
                         value={guess.scoreB}
-                        disabled={match.status !== 'SCHEDULED' || !!savedGuesses[match.id] || isSubmitting}
+                        disabled={isMatchTbd || match.status !== 'SCHEDULED' || !!savedGuesses[match.id] || isSubmitting}
                         onChange={(e) => onGuessChange(match.id, 'B', e.target.value === '' ? '' : parseInt(e.target.value, 10))}
                         className={`w-14 h-16 text-center text-2xl font-bold rounded-xl transition-all ${
-                          match.status !== 'SCHEDULED' || !!savedGuesses[match.id]
+                          isMatchTbd || match.status !== 'SCHEDULED' || !!savedGuesses[match.id]
                             ? 'bg-[#0f1c29] text-gray-300 opacity-75 border border-gray-700 cursor-not-allowed'
                             : 'bg-[#1f364d] text-white focus:outline-none focus:ring-2 focus:ring-primary focus:bg-background'
                         }`}
@@ -214,15 +265,25 @@ export function MatchGrid({ matches, guesses, savedGuesses = {}, onGuessChange, 
                   {/* Team B */}
                   <div className="flex flex-col items-center flex-1">
                     <div className="w-16 h-16 rounded-full bg-background flex items-center justify-center mb-2 overflow-hidden border-2 border-gray-700">
-                      {match.logoB ? (
+                      {tbdB ? (
+                        <span className="text-3xl opacity-50">❓</span>
+                      ) : match.logoB ? (
                         <img src={match.logoB} alt={match.timeB} className="w-12 h-12 object-contain" />
                       ) : (
                         <span className="text-3xl">{match.timeBFlag}</span>
                       )}
                     </div>
-                    <span className="font-semibold text-sm">{match.timeB}</span>
+                    <span className="font-semibold text-sm text-center">{tbdB ? "A Definir" : match.timeB}</span>
                   </div>
                 </div>
+
+                {match.status === 'FINISHED' && savedGuesses[match.id] && savedGuesses[match.id].scoreA !== '' && (
+                  <div className="mx-6 mb-2">
+                    <div className="bg-primary/20 border border-primary/30 text-primary rounded-lg p-2 text-xs flex items-center justify-center gap-1 font-bold">
+                      🎯 Seu palpite registrado: {savedGuesses[match.id].scoreA} x {savedGuesses[match.id].scoreB}
+                    </div>
+                  </div>
+                )}
 
                 {selectedPeerId && peerGuesses[match.id] && (
                   <div className="mx-6 mb-6">

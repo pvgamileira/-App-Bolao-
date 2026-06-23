@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react';
-import { Trophy, CalendarDays, Moon, Sun, LogOut } from 'lucide-react';
-import { useTheme } from '../contexts/ThemeContext';
+import { Trophy, CalendarDays, LogOut } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 type LayoutProps = {
@@ -10,7 +9,7 @@ type LayoutProps = {
 };
 
 export function Layout({ children, currentUserId, onLogout }: LayoutProps) {
-  const { theme, toggleTheme } = useTheme();
+
   const location = useLocation();
 
   const isDashboard = location.pathname === '/dashboard';
@@ -50,14 +49,6 @@ export function Layout({ children, currentUserId, onLogout }: LayoutProps) {
           )}
 
           <div className="flex items-center gap-4">
-            <button
-              onClick={toggleTheme}
-              className="p-2 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-gray-800"
-              aria-label="Toggle theme"
-            >
-              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
-
             {currentUserId && (
               <button
                 onClick={onLogout}
