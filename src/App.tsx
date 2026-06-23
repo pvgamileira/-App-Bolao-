@@ -98,6 +98,11 @@ function AppContent() {
   };
 
   useEffect(() => {
+    // Tenta sincronizar os jogos com a API da ESPN em background, e depois busca do banco
+    supabase.functions.invoke('sync-matches').then(() => {
+        fetchMatches();
+    }).catch(console.error);
+
     fetchMatches();
     fetchLeaderboard();
 
