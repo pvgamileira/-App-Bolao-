@@ -38,4 +38,4 @@ Este documento registra todas as ideias, melhorias contínuas, atualizações e 
 
 ---
 
-*Nota: Apenas a primeira etapa foi implementada ainda. Ao solicitar a implementação de qualquer um desses pontos, utilize `/opsx-propose` mencionando o item desejado deste Diário de Bordo para que a especificação e os artefatos sejam gerados.*
+*Nota: Apenas a primeira etapa "Fix First Access" e a correção de "Live Match Lock and Points Sync" foram implementadas. Ao solicitar a implementação de qualquer um desses pontos, utilize `/opsx-propose` mencionando o item desejado deste Diário de Bordo para que a especificação e os artefatos sejam gerados.*
