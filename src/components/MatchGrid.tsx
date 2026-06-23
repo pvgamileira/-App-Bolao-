@@ -14,6 +14,7 @@ export type Match = {
   placarOficialB?: number;
   logoA?: string | null;
   logoB?: string | null;
+  tempoDecorrido?: string | null;
 };
 
 export type Guess = {
@@ -39,6 +40,7 @@ export function MatchGrid({ matches, guesses, savedGuesses = {}, onGuessChange, 
   const [usersList, setUsersList] = useState<{id: string, nome_guerra: string}[]>([]);
   const [selectedPeerId, setSelectedPeerId] = useState<string>('');
   const [peerGuesses, setPeerGuesses] = useState<Record<string, {palpite_a: number, palpite_b: number}>>({});
+  const [showLiveModalId, setShowLiveModalId] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchUsers() {
@@ -217,7 +219,7 @@ export function MatchGrid({ matches, guesses, savedGuesses = {}, onGuessChange, 
             const isMatchTbd = tbdA || tbdB;
             
             return (
-              <div key={match.id} className="bg-surface rounded-2xl overflow-hidden shadow-lg border border-gray-800">
+              <div key={match.id} className="bg-surface rounded-2xl overflow-hidden shadow-lg border border-gray-800 relative">
                 <div className="bg-[#1f364d] text-center py-2 text-xs font-bold text-gray-300 tracking-wider flex items-center justify-center gap-2 flex-wrap">
                   {match.date.toLocaleDateString('pt-BR', { weekday: 'long' }).toUpperCase()} ÀS {match.date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                   {match.status === 'LIVE' && (
@@ -226,7 +228,7 @@ export function MatchGrid({ matches, guesses, savedGuesses = {}, onGuessChange, 
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                         <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
                       </span>
-                      AO VIVO
+                      AO VIVO {match.tempoDecorrido ? `- ${match.tempoDecorrido}` : ''}
                     </span>
                   )}
                   {match.status === 'FINISHED' && (
@@ -253,47 +255,44 @@ export function MatchGrid({ matches, guesses, savedGuesses = {}, onGuessChange, 
                   </div>
 
                   {/* Scores */}
-                  <div className="flex items-center gap-4 flex-1 justify-center">
-                    {match.status === 'FINISHED' && match.placarOficialA !== undefined ? (
-                      <div className="w-14 h-16 bg-[#0f1c29] text-gray-300 text-center text-2xl font-bold rounded-xl flex items-center justify-center opacity-75 border border-gray-700">
-                        {match.placarOficialA}
-                      </div>
-                    ) : (
-                      <input
-                        type="number"
-                        min="0"
-                        max="99"
-                        value={guess.scoreA}
-                        disabled={isMatchTbd || match.status !== 'SCHEDULED' || isSubmitting}
-                        onChange={(e) => onGuessChange(match.id, 'A', e.target.value === '' ? '' : parseInt(e.target.value, 10))}
-                        className={`w-14 h-16 text-center text-2xl font-bold rounded-xl transition-all ${
-                          isMatchTbd || match.status !== 'SCHEDULED'
-                            ? 'bg-[#0f1c29] text-gray-300 opacity-75 border border-gray-700 cursor-not-allowed'
-                            : 'bg-[#1f364d] text-white focus:outline-none focus:ring-2 focus:ring-primary focus:bg-background'
-                        }`}
-                      />
-                    )}
+                  <div className="flex items-center gap-4 flex-1 justify-center relative">
+                    <input
+                      type="number"
+                      min="0"
+                      max="99"
+                      value={guess.scoreA}
+                      disabled={isMatchTbd || match.status !== 'SCHEDULED' || isSubmitting}
+                      onChange={(e) => onGuessChange(match.id, 'A', e.target.value === '' ? '' : parseInt(e.target.value, 10))}
+                      className={`w-14 h-16 text-center text-2xl font-bold rounded-xl transition-all ${
+                        isMatchTbd || match.status !== 'SCHEDULED'
+                          ? 'bg-[#0f1c29] text-gray-300 opacity-75 border border-gray-700 cursor-not-allowed'
+                          : 'bg-[#1f364d] text-white focus:outline-none focus:ring-2 focus:ring-primary focus:bg-background'
+                      }`}
+                    />
                     
                     <span className="text-gold font-bold text-xl">X</span>
                     
-                    {match.status === 'FINISHED' && match.placarOficialB !== undefined ? (
-                      <div className="w-14 h-16 bg-[#0f1c29] text-gray-300 text-center text-2xl font-bold rounded-xl flex items-center justify-center opacity-75 border border-gray-700">
-                        {match.placarOficialB}
-                      </div>
-                    ) : (
-                      <input
-                        type="number"
-                        min="0"
-                        max="99"
-                        value={guess.scoreB}
-                        disabled={isMatchTbd || match.status !== 'SCHEDULED' || isSubmitting}
-                        onChange={(e) => onGuessChange(match.id, 'B', e.target.value === '' ? '' : parseInt(e.target.value, 10))}
-                        className={`w-14 h-16 text-center text-2xl font-bold rounded-xl transition-all ${
-                          isMatchTbd || match.status !== 'SCHEDULED'
-                            ? 'bg-[#0f1c29] text-gray-300 opacity-75 border border-gray-700 cursor-not-allowed'
-                            : 'bg-[#1f364d] text-white focus:outline-none focus:ring-2 focus:ring-primary focus:bg-background'
-                        }`}
-                      />
+                    <input
+                      type="number"
+                      min="0"
+                      max="99"
+                      value={guess.scoreB}
+                      disabled={isMatchTbd || match.status !== 'SCHEDULED' || isSubmitting}
+                      onChange={(e) => onGuessChange(match.id, 'B', e.target.value === '' ? '' : parseInt(e.target.value, 10))}
+                      className={`w-14 h-16 text-center text-2xl font-bold rounded-xl transition-all ${
+                        isMatchTbd || match.status !== 'SCHEDULED'
+                          ? 'bg-[#0f1c29] text-gray-300 opacity-75 border border-gray-700 cursor-not-allowed'
+                          : 'bg-[#1f364d] text-white focus:outline-none focus:ring-2 focus:ring-primary focus:bg-background'
+                      }`}
+                    />
+
+                    {(match.status === 'LIVE' || match.status === 'FINISHED') && (
+                      <button 
+                        onClick={() => setShowLiveModalId(match.id)}
+                        className="absolute -bottom-8 text-[10px] bg-primary/20 text-primary px-3 py-1 rounded-full whitespace-nowrap hover:bg-primary/40 transition-colors shadow-sm"
+                      >
+                        👁️ Ver Placar Real
+                      </button>
                     )}
                   </div>
 
@@ -312,23 +311,68 @@ export function MatchGrid({ matches, guesses, savedGuesses = {}, onGuessChange, 
                   </div>
                 </div>
 
-                {match.status === 'FINISHED' && savedGuesses[match.id] && savedGuesses[match.id].scoreA !== '' && (
-                  <div className="mx-6 mb-2">
+                {match.status === 'FINISHED' && savedGuesses[match.id] && savedGuesses[match.id].points !== undefined && savedGuesses[match.id].points !== null && (
+                  <div className="mx-6 mb-2 mt-4">
                     <div className="bg-[#1f364d] border border-gray-700 text-gray-300 rounded-lg p-3 flex items-center justify-between text-sm font-bold shadow-inner">
-                      <div className="flex items-center gap-2">
-                        <span>🎯 Seu palpite:</span>
-                        <span className="bg-[#0f1c29] px-3 py-1 rounded text-white">{savedGuesses[match.id].scoreA} x {savedGuesses[match.id].scoreB}</span>
+                      <span>Resultado Finalizado</span>
+                      <div className={`px-3 py-1 rounded shadow-sm ${
+                        (savedGuesses[match.id].points ?? 0) > 0 
+                          ? 'bg-primary text-background' 
+                          : 'bg-gray-700 text-gray-400'
+                      }`}>
+                        +{(savedGuesses[match.id].points ?? 0)} pts
                       </div>
-                      {savedGuesses[match.id].points !== undefined && savedGuesses[match.id].points !== null && (
-                        <div className={`px-3 py-1 rounded shadow-sm ${
-                          (savedGuesses[match.id].points ?? 0) > 0 
-                            ? 'bg-primary text-background' 
-                            : 'bg-gray-700 text-gray-400'
-                        }`}>
-                          +{(savedGuesses[match.id].points ?? 0)} pts
-                        </div>
-                      )}
                     </div>
+                  </div>
+                )}
+
+                {/* Live Match Modal Overlay */}
+                {showLiveModalId === match.id && (
+                  <div className="absolute inset-0 bg-[#0f1c29]/95 backdrop-blur-sm z-20 flex flex-col items-center justify-center p-4">
+                    <button 
+                      onClick={() => setShowLiveModalId(null)}
+                      className="absolute top-2 right-4 text-gray-400 hover:text-white font-bold text-3xl"
+                    >
+                      &times;
+                    </button>
+                    <h3 className="text-primary font-bold text-lg mb-6 flex items-center gap-2 tracking-widest">
+                      {match.status === 'LIVE' ? (
+                        <>
+                          <span className="relative flex h-3 w-3">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
+                          </span>
+                          AO VIVO
+                        </>
+                      ) : (
+                        'PLACAR FINAL'
+                      )}
+                    </h3>
+                    
+                    <div className="flex items-center gap-8 mb-4 w-full justify-center px-4">
+                      <div className="flex flex-col items-center flex-1">
+                        <div className="w-20 h-20 rounded-full bg-background flex items-center justify-center mb-3 border-2 border-gray-700">
+                          {match.logoA ? <img src={match.logoA} alt="Logo" className="w-14 h-14 object-contain" /> : <span className="text-4xl">{match.timeAFlag}</span>}
+                        </div>
+                        <span className="font-semibold text-center leading-tight">{match.timeA}</span>
+                      </div>
+                      
+                      <div className="flex items-center gap-4 bg-background px-6 py-4 rounded-2xl border border-gray-800 shadow-xl">
+                        <span className="text-5xl font-bold text-white">{match.placarOficialA ?? '-'}</span>
+                        <span className="text-gold text-2xl font-bold">X</span>
+                        <span className="text-5xl font-bold text-white">{match.placarOficialB ?? '-'}</span>
+                      </div>
+                      
+                      <div className="flex flex-col items-center flex-1">
+                        <div className="w-20 h-20 rounded-full bg-background flex items-center justify-center mb-3 border-2 border-gray-700">
+                          {match.logoB ? <img src={match.logoB} alt="Logo" className="w-14 h-14 object-contain" /> : <span className="text-4xl">{match.timeBFlag}</span>}
+                        </div>
+                        <span className="font-semibold text-center leading-tight">{match.timeB}</span>
+                      </div>
+                    </div>
+                    {match.status === 'LIVE' && match.tempoDecorrido && (
+                      <span className="text-gray-400 font-bold tracking-widest">{match.tempoDecorrido}'</span>
+                    )}
                   </div>
                 )}
 

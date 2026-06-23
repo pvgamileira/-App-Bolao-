@@ -27,7 +27,19 @@ Este documento registra todas as ideias, melhorias contínuas, atualizações e 
 - Exibir dinamicamente o tempo de jogo (minutos decorridos) e o placar oficial atualizado em tempo real.
 - Mostrar esses dados ao lado ou embaixo do modal de palpites do respectivo jogo na interface do usuário.
 
-### 4. Sistema de Múltiplos Bolões e Convites (Multitenancy)
+### 4. Correção da Regra de Pontuação
+**Contexto:** O banco de dados atual não está calculando os pontos corretamente de acordo com a regra oficial do bolão (não está dando 3 pontos por acertar o vencedor).
+**O que precisa ser feito:**
+- Atualizar a trigger de pontuação (`update_user_points_on_match_finish`) para aplicar a nova regra:
+  - **Placar cravado:** 5 pontos.
+  - **Acertou o vencedor ou o empate:** 3 pontos.
+  - **Bônus (somente se não cravou o placar, mas acertou o vencedor/empate):**
+    - +1 ponto se acertou a diferença de gols.
+    - +1 ponto se acertou os gols do time perdedor (não existe em empates).
+    - +1 ponto se o jogo real foi goleada (diferença de 4 gols ou mais).
+  - A pontuação máxima por jogo é de 5 pontos.
+
+### 5. Sistema de Múltiplos Bolões e Convites (Multitenancy)
 **Contexto:** O objetivo é distribuir o aplicativo para outras pessoas e grupos poderem usar de forma isolada. Atualmente, todos os usuários e jogos compartilham um único ranking global.
 **O que precisa ser feito:**
 - **Nova Entidade `Bolão` (ou Grupo):** Criar uma tabela no Supabase para representar um "Bolão", contendo um código de convite único.
@@ -35,6 +47,7 @@ Este documento registra todas as ideias, melhorias contínuas, atualizações e 
 - **Isolamento de Leaderboards:** O ranking (LeaderboardPodium) passará a ser filtrado pelo "Bolão" que o usuário selecionou, mostrando apenas as pessoas daquele grupo.
 - **Isolamento de Palpites:** Definir a regra de negócio: Se o usuário está em 2 bolões e faz um palpite no jogo do Brasil, esse palpite vale pros 2 bolões ou cada bolão tem seu próprio palpite? (A definir no plano de implementação).
 - **Interface de Grupos:** Criar uma tela para o usuário criar seu próprio bolão ou entrar em um bolão através de um código de acesso.
+
 
 ---
 

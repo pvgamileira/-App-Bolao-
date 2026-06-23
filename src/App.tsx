@@ -51,7 +51,8 @@ function AppContent() {
           placarOficialA: j.placar_oficial_a,
           placarOficialB: j.placar_oficial_b,
           logoA: j.logo_a,
-          logoB: j.logo_b
+          logoB: j.logo_b,
+          tempoDecorrido: j.tempo_decorrido
         };
       });
       setMatches(formattedMatches);
@@ -71,7 +72,7 @@ function AppContent() {
         return {
           id: u.id,
           nomeGuerra: u.nome_guerra,
-          points: (u.pontos_legado || 0) + palpitesPoints,
+          points: palpitesPoints,
           initials: u.nome_guerra.substring(0, 2).toUpperCase()
         };
       });

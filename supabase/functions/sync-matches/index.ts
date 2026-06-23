@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -38,6 +39,7 @@ serve(async (req) => {
 
             let mappedStatus = 'SCHEDULED';
             const espnStatus = event.status.type.name;
+            const displayClock = event.status.displayClock;
 
             if (['STATUS_IN_PROGRESS', 'STATUS_FIRST_HALF', 'STATUS_SECOND_HALF'].includes(espnStatus)) {
                 mappedStatus = 'LIVE';
@@ -54,7 +56,8 @@ serve(async (req) => {
                 data_hora: competition.date,
                 placar_oficial_a: mappedStatus !== 'SCHEDULED' ? parseInt(homeTeam.score) : null,
                 placar_oficial_b: mappedStatus !== 'SCHEDULED' ? parseInt(awayTeam.score) : null,
-                status: mappedStatus
+                status: mappedStatus,
+                tempo_decorrido: displayClock || null
             };
         });
 

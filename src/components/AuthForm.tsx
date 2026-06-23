@@ -97,7 +97,12 @@ export function AuthForm({ onLogin }: { onLogin: (userId: string, nomeGuerra: st
         <div className="bg-surface p-4 rounded-full mb-4 shadow-[0_0_15px_rgba(0,230,118,0.3)]">
           <Trophy size={48} className="text-primary" />
         </div>
-        <h1 className="text-3xl font-bold text-center text-white">Bolão da Firma</h1>
+        <div className="flex flex-col items-center gap-1">
+          <h1 className="text-3xl font-bold text-center text-white">Bolão da Firma</h1>
+          <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+            {import.meta.env.VITE_APP_VERSION || 'v1.0.0'}
+          </span>
+        </div>
       </div>
 
       <div className="bg-surface w-full max-w-md rounded-2xl shadow-xl border border-gray-800 overflow-hidden">
