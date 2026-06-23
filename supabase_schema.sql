@@ -41,6 +41,10 @@ CREATE POLICY "Public read access for usuarios" ON public.usuarios
 CREATE POLICY "Anonymous insert for usuarios" ON public.usuarios
     FOR INSERT WITH CHECK (true);
 
+-- Allow anonymous updates for usuarios (necessário para o Primeiro Acesso)
+CREATE POLICY "Anonymous update for usuarios" ON public.usuarios
+    FOR UPDATE USING (true);
+
 -- Policies for 'jogos'
 -- Allow public read access (to show daily matches)
 CREATE POLICY "Public read access for jogos" ON public.jogos
