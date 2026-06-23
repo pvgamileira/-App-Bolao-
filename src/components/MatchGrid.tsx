@@ -328,7 +328,7 @@ export function MatchGrid({ matches, guesses, savedGuesses = {}, onGuessChange, 
 
                 {/* Live Match Modal Overlay - Now Fixed Global */}
                 {showLiveModalId === match.id && (
-                  <div className="fixed bottom-4 left-4 right-4 md:left-auto md:bottom-8 md:right-8 md:w-80 bg-[#0f1c29]/95 backdrop-blur-md z-50 flex flex-col items-center justify-center p-6 rounded-2xl shadow-2xl border border-primary animate-in slide-in-from-bottom-5">
+                  <div className="fixed bottom-24 left-4 right-4 md:left-auto md:bottom-8 md:right-8 md:w-80 bg-[#0f1c29]/95 backdrop-blur-md z-50 flex flex-col items-center justify-center p-6 rounded-2xl shadow-2xl border border-primary animate-in slide-in-from-bottom-5">
                     <button 
                       onClick={() => setShowLiveModalId(null)}
                       className="absolute top-2 right-4 text-gray-400 hover:text-white font-bold text-2xl"
