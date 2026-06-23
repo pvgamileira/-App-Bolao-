@@ -326,16 +326,16 @@ export function MatchGrid({ matches, guesses, savedGuesses = {}, onGuessChange, 
                   </div>
                 )}
 
-                {/* Live Match Modal Overlay */}
+                {/* Live Match Modal Overlay - Now Fixed Global */}
                 {showLiveModalId === match.id && (
-                  <div className="absolute inset-0 bg-[#0f1c29]/95 backdrop-blur-sm z-20 flex flex-col items-center justify-center p-4">
+                  <div className="fixed bottom-4 right-4 md:bottom-8 md:right-8 bg-[#0f1c29]/95 backdrop-blur-md z-50 flex flex-col items-center justify-center p-6 rounded-2xl shadow-2xl border border-primary w-80 animate-in slide-in-from-bottom-5">
                     <button 
                       onClick={() => setShowLiveModalId(null)}
-                      className="absolute top-2 right-4 text-gray-400 hover:text-white font-bold text-3xl"
+                      className="absolute top-2 right-4 text-gray-400 hover:text-white font-bold text-2xl"
                     >
                       &times;
                     </button>
-                    <h3 className="text-primary font-bold text-lg mb-6 flex items-center gap-2 tracking-widest">
+                    <h3 className="text-primary font-bold text-lg mb-4 flex items-center gap-2 tracking-widest mt-2">
                       {match.status === 'LIVE' ? (
                         <>
                           <span className="relative flex h-3 w-3">
@@ -349,29 +349,29 @@ export function MatchGrid({ matches, guesses, savedGuesses = {}, onGuessChange, 
                       )}
                     </h3>
                     
-                    <div className="flex items-center gap-8 mb-4 w-full justify-center px-4">
+                    <div className="flex items-center gap-4 mb-2 w-full justify-center">
                       <div className="flex flex-col items-center flex-1">
-                        <div className="w-20 h-20 rounded-full bg-background flex items-center justify-center mb-3 border-2 border-gray-700">
-                          {match.logoA ? <img src={match.logoA} alt="Logo" className="w-14 h-14 object-contain" /> : <span className="text-4xl">{match.timeAFlag}</span>}
+                        <div className="w-12 h-12 rounded-full bg-background flex items-center justify-center mb-2 border border-gray-700">
+                          {match.logoA ? <img src={match.logoA} alt="Logo" className="w-8 h-8 object-contain" /> : <span className="text-2xl">{match.timeAFlag}</span>}
                         </div>
-                        <span className="font-semibold text-center leading-tight">{match.timeA}</span>
+                        <span className="font-semibold text-center text-xs leading-tight">{match.timeA}</span>
                       </div>
                       
-                      <div className="flex items-center gap-4 bg-background px-6 py-4 rounded-2xl border border-gray-800 shadow-xl">
-                        <span className="text-5xl font-bold text-white">{match.placarOficialA ?? '-'}</span>
-                        <span className="text-gold text-2xl font-bold">X</span>
-                        <span className="text-5xl font-bold text-white">{match.placarOficialB ?? '-'}</span>
+                      <div className="flex items-center gap-2 bg-background px-4 py-2 rounded-xl border border-gray-800 shadow-xl">
+                        <span className="text-3xl font-bold text-white">{match.placarOficialA ?? '-'}</span>
+                        <span className="text-gold text-lg font-bold">X</span>
+                        <span className="text-3xl font-bold text-white">{match.placarOficialB ?? '-'}</span>
                       </div>
                       
                       <div className="flex flex-col items-center flex-1">
-                        <div className="w-20 h-20 rounded-full bg-background flex items-center justify-center mb-3 border-2 border-gray-700">
-                          {match.logoB ? <img src={match.logoB} alt="Logo" className="w-14 h-14 object-contain" /> : <span className="text-4xl">{match.timeBFlag}</span>}
+                        <div className="w-12 h-12 rounded-full bg-background flex items-center justify-center mb-2 border border-gray-700">
+                          {match.logoB ? <img src={match.logoB} alt="Logo" className="w-8 h-8 object-contain" /> : <span className="text-2xl">{match.timeBFlag}</span>}
                         </div>
-                        <span className="font-semibold text-center leading-tight">{match.timeB}</span>
+                        <span className="font-semibold text-center text-xs leading-tight">{match.timeB}</span>
                       </div>
                     </div>
                     {match.status === 'LIVE' && match.tempoDecorrido && (
-                      <span className="text-gray-400 font-bold tracking-widest">{match.tempoDecorrido}'</span>
+                      <span className="text-gray-400 font-bold tracking-widest text-sm mt-2">{match.tempoDecorrido}'</span>
                     )}
                   </div>
                 )}
