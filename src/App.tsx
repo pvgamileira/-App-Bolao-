@@ -31,19 +31,29 @@ function AppContent() {
       .order('data_hora', { ascending: true });
 
     if (!error && data) {
-      const formattedMatches: Match[] = data.map(j => ({
-        id: j.id,
-        timeA: j.time_a,
-        timeAFlag: '🏁',
-        timeB: j.time_b,
-        timeBFlag: '🏁',
-        date: new Date(j.data_hora),
-        status: j.status || 'SCHEDULED',
-        placarOficialA: j.placar_oficial_a,
-        placarOficialB: j.placar_oficial_b,
-        logoA: j.logo_a,
-        logoB: j.logo_b
-      }));
+      const formattedMatches: Match[] = data.map(j => {
+        const matchDate = new Date(j.data_hora);
+        let computedStatus = j.status || 'SCHEDULED';
+        
+        // Se a data já passou e o banco ainda diz SCHEDULED, força para LIVE na interface
+        if (computedStatus === 'SCHEDULED' && new Date() >= matchDate) {
+          computedStatus = 'LIVE';
+        }
+
+        return {
+          id: j.id,
+          timeA: j.time_a,
+          timeAFlag: '🏁',
+          timeB: j.time_b,
+          timeBFlag: '🏁',
+          date: matchDate,
+          status: computedStatus,
+          placarOficialA: j.placar_oficial_a,
+          placarOficialB: j.placar_oficial_b,
+          logoA: j.logo_a,
+          logoB: j.logo_b
+        };
+      });
       setMatches(formattedMatches);
     }
     setIsLoadingMatches(false);
