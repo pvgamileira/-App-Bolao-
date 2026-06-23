@@ -23,7 +23,7 @@ Este documento registra todas as ideias, melhorias contínuas, atualizações e 
 ### 3. Integração de API de Placar em Tempo Real
 **Contexto:** Tornar a experiência de acompanhamento mais rica e dinâmica durante os jogos ao vivo, sem precisar que o usuário saia do app para conferir como o jogo está.
 **O que precisa ser feito:**
-- Buscar e integrar uma API de futebol gratuita ou acessível (ex: API-Football, football-data.org) para consultar o status real da partida.
+- Buscar pela edge function da API da ESPN os placares e status dos jogos.
 - Exibir dinamicamente o tempo de jogo (minutos decorridos) e o placar oficial atualizado em tempo real.
 - Mostrar esses dados ao lado ou embaixo do modal de palpites do respectivo jogo na interface do usuário.
 
