@@ -2,7 +2,17 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
 serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
+  }
+
     try {
         const supabaseUrl = Deno.env.get('SUPABASE_URL') || Deno.env.get('VITE_SUPABASE_URL')!;
         // Tenta buscar as vars de ambiente; se o Supabase bloquear com SUPABASE_, usamos SERVICE_ROLE_KEY
@@ -69,12 +79,14 @@ serve(async (req) => {
         if (error) throw error;
 
         return new Response(JSON.stringify({ success: true, synced: matchesToUpsert.length, window: intervaloDatas }), {
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 'Content-Type': 'application/json', ...corsHeaders },
         });
 
-    } catch (err: any) {
-        return new Response(JSON.stringify({ error: err.message }), {
-            status: 500, headers: { 'Content-Type': 'application/json' }
-        });
+    } catch (error: any) {
+        console.error('Falha geral no sync-matches:', error)
+        return new Response(JSON.stringify({ error: error.message || String(error) }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders },
+        })
     }
 })
