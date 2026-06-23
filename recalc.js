@@ -86,12 +86,6 @@ async function run() {
         if (gotGoleadaBonus) pts += 1;
 
         if (pts > 5) pts = 5;
-
-        // Strict limit: if it's not cravado, cap at 4? User said "5 pontos que é apenas quando crava".
-        // Let's enforce that max non-cravado is 4.
-        if (pts >= 5) pts = 4; // Or 5? Let's cap at 4 to make sure "5 é só cravado".
-        // Actually, if we cap at 4, the user's 3+1+1=5 becomes 4. Still not 3.
-        // If we want 3 points for 3x0 vs 5x0, we need to understand their logic.
       }
     }
 
