@@ -6,7 +6,7 @@ Este documento registra todas as ideias, melhorias contínuas, atualizações e 
 
 ## 📌 Backlog de Melhorias e Atualizações
 
-### 1. Sistema de "Primeiro Acesso" (Recuperação de Usuários da Planilha)
+### 1. [CONCLUÍDO] Sistema de "Primeiro Acesso" (Recuperação de Usuários da Planilha)
 **Contexto:** Atualmente, os 5 usuários importados da planilha de histórico possuem `pin = null` (ou vazio) no banco de dados, permitindo que acessem o sistema sem uma senha real (ou gerando furos de segurança).
 **O que precisa ser feito:**
 - Bloquear o login direto desses usuários se a senha no banco estiver vazia ou nula.
@@ -20,7 +20,14 @@ Este documento registra todas as ideias, melhorias contínuas, atualizações e 
 - Adicionar uma tag de versão (ex: `v1.0.1`) visível na tela inicial de login/cadastro e possivelmente no rodapé do aplicativo.
 - Estabelecer uma lógica simples de incremento (ex: arquivo `.env` ou hardcoded no `Layout.tsx`).
 
-### 3. Sistema de Múltiplos Bolões e Convites (Multitenancy)
+### 3. Integração de API de Placar em Tempo Real
+**Contexto:** Tornar a experiência de acompanhamento mais rica e dinâmica durante os jogos ao vivo, sem precisar que o usuário saia do app para conferir como o jogo está.
+**O que precisa ser feito:**
+- Buscar e integrar uma API de futebol gratuita ou acessível (ex: API-Football, football-data.org) para consultar o status real da partida.
+- Exibir dinamicamente o tempo de jogo (minutos decorridos) e o placar oficial atualizado em tempo real.
+- Mostrar esses dados ao lado ou embaixo do modal de palpites do respectivo jogo na interface do usuário.
+
+### 4. Sistema de Múltiplos Bolões e Convites (Multitenancy)
 **Contexto:** O objetivo é distribuir o aplicativo para outras pessoas e grupos poderem usar de forma isolada. Atualmente, todos os usuários e jogos compartilham um único ranking global.
 **O que precisa ser feito:**
 - **Nova Entidade `Bolão` (ou Grupo):** Criar uma tabela no Supabase para representar um "Bolão", contendo um código de convite único.
@@ -31,4 +38,4 @@ Este documento registra todas as ideias, melhorias contínuas, atualizações e 
 
 ---
 
-*Nota: Nenhuma dessas features foi implementada ainda. Ao solicitar a implementação de qualquer um desses pontos, utilize `/opsx-propose` mencionando o item desejado deste Diário de Bordo para que a especificação e os artefatos sejam gerados.*
+*Nota: Apenas a primeira etapa foi implementada ainda. Ao solicitar a implementação de qualquer um desses pontos, utilize `/opsx-propose` mencionando o item desejado deste Diário de Bordo para que a especificação e os artefatos sejam gerados.*
