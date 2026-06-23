@@ -19,21 +19,53 @@ export function AuthForm({ onLogin }: { onLogin: (userId: string, nomeGuerra: st
 
     try {
       if (activeTab === 'CRIAR') {
-        const { data, error: insertError } = await supabase
+        if (!pin.trim()) {
+          setError('Você deve fornecer um PIN de 4 dígitos.');
+          setIsLoading(false);
+          return;
+        }
+
+        // Check if user already exists
+        const { data: existingUser, error: checkError } = await supabase
           .from('usuarios')
-          .insert([{ nome_guerra: normalizedName, pin: pin.trim() || null }])
-          .select('id')
+          .select('id, pin')
+          .eq('nome_guerra', normalizedName)
           .single();
 
-        if (insertError) {
-          if (insertError.code === '23505') { // unique_violation
-            setError('Nome de Guerra já está em uso.');
+        if (existingUser) {
+          if (existingUser.pin === null) {
+            // Claim legacy account
+            const { error: updateError } = await supabase
+              .from('usuarios')
+              .update({ pin: pin.trim() })
+              .eq('id', existingUser.id);
+            
+            if (updateError) {
+              setError('Erro ao configurar PIN: ' + updateError.message);
+            } else {
+              onLogin(existingUser.id, normalizedName);
+            }
           } else {
-            setError('Erro ao criar conta: ' + insertError.message);
+            // Account exists and has a pin
+            setError('Nome de Guerra já está em uso.');
           }
-        } else if (data) {
-          onLogin(data.id, normalizedName);
+        } else if (checkError && checkError.code === 'PGRST116') {
+          // User does not exist, safe to insert
+          const { data, error: insertError } = await supabase
+            .from('usuarios')
+            .insert([{ nome_guerra: normalizedName, pin: pin.trim() }])
+            .select('id')
+            .single();
+
+          if (insertError) {
+            setError('Erro ao criar conta: ' + insertError.message);
+          } else if (data) {
+            onLogin(data.id, normalizedName);
+          }
+        } else {
+           setError('Erro ao verificar usuário: ' + (checkError?.message || 'Erro desconhecido.'));
         }
+
       } else {
         // ENTRAR
         const { data, error: fetchError } = await supabase
@@ -44,13 +76,12 @@ export function AuthForm({ onLogin }: { onLogin: (userId: string, nomeGuerra: st
 
         if (fetchError || !data) {
           setError('Nome de guerra não encontrado ou PIN incorreto.');
-        } else if (data) {
-          // Check pin if user has one
-          if (data.pin && data.pin !== pin.trim()) {
-            setError('Nome de guerra não encontrado ou PIN incorreto.');
-          } else {
-            onLogin(data.id, normalizedName);
-          }
+        } else if (data.pin === null) {
+          setError('Sua conta ainda não possui senha. Por favor, vá em "Criar Conta" para definir seu PIN de acesso inicial.');
+        } else if (data.pin !== pin.trim()) {
+          setError('Nome de guerra não encontrado ou PIN incorreto.');
+        } else {
+          onLogin(data.id, normalizedName);
         }
       }
     } catch (err: any) {
@@ -117,7 +148,7 @@ export function AuthForm({ onLogin }: { onLogin: (userId: string, nomeGuerra: st
               />
             </div>
             {activeTab === 'CRIAR' && (
-               <p className="text-xs text-gray-500 mt-1 mb-2">Opcional: use um PIN para proteger sua conta</p>
+               <p className="text-xs text-gray-500 mt-1 mb-2">Um PIN de 4 dígitos é obrigatório para manter sua conta segura</p>
             )}
 
             {error && (
