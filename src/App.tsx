@@ -72,7 +72,7 @@ function AppContent() {
         return {
           id: u.id,
           nomeGuerra: u.nome_guerra,
-          points: palpitesPoints,
+          points: (u.pontos_legado || 0) + palpitesPoints,
           initials: u.nome_guerra.substring(0, 2).toUpperCase()
         };
       });
