@@ -98,11 +98,6 @@ function AppContent() {
   };
 
   useEffect(() => {
-    // Tenta sincronizar os jogos com a API da ESPN em background, e depois busca do banco
-    supabase.functions.invoke('sync-matches').then(() => {
-        fetchMatches();
-    }).catch(console.error);
-
     fetchMatches();
     fetchLeaderboard();
 
@@ -110,9 +105,30 @@ function AppContent() {
     const channel = supabase.channel(channelId)
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'jogos' },
-        () => {
-          fetchMatches();
+        { event: 'UPDATE', schema: 'public', table: 'jogos' },
+        (payload) => {
+          const updatedRow = payload.new as any;
+          if (!updatedRow || !updatedRow.id) return;
+          
+          setMatches(prevMatches => {
+            return prevMatches.map(m => {
+              if (m.id === updatedRow.id) {
+                const matchDate = new Date(updatedRow.data_hora);
+                let computedStatus = updatedRow.status || 'SCHEDULED';
+                if (computedStatus === 'SCHEDULED' && new Date() >= matchDate) {
+                  computedStatus = 'LIVE';
+                }
+                return {
+                  ...m,
+                  status: computedStatus,
+                  placarOficialA: updatedRow.placar_oficial_a,
+                  placarOficialB: updatedRow.placar_oficial_b,
+                  tempoDecorrido: updatedRow.tempo_decorrido
+                };
+              }
+              return m;
+            });
+          });
         }
       )
       .on(
