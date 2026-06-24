@@ -105,7 +105,7 @@ function AppContent() {
     // Bypass no pg_cron do Supabase que falha silenciosamente no tier gratuito.
     const syncMatches = () => supabase.functions.invoke('sync-matches').catch(console.error);
     syncMatches(); // Chama uma vez ao carregar
-    const syncInterval = setInterval(syncMatches, 60000);
+    const syncInterval = setInterval(syncMatches, 15000);
 
     const channelId = `schema-db-changes-${Date.now()}-${Math.random()}`;
     const channel = supabase.channel(channelId)
