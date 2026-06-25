@@ -44,9 +44,14 @@ Este documento registra todas as ideias, melhorias contínuas, atualizações e 
 **O que precisa ser feito:**
 - **Nova Entidade `Bolão` (ou Grupo):** Criar uma tabela no Supabase para representar um "Bolão", contendo um código de convite único.
 - **Relação N:N (Usuários <-> Bolões):** 1 usuário pode participar de N bolões. Os líderes de bolão podem gerenciar quem participa.
-- **Isolamento de Leaderboards:** O ranking (LeaderboardPodium) passará a ser filtrado pelo "Bolão" que o usuário selecionou, mostrando apenas as pessoas daquele grupo.
-- **Isolamento de Palpites:** Definir a regra de negócio: Se o usuário está em 2 bolões e faz um palpite no jogo do Brasil, esse palpite vale pros 2 bolões ou cada bolão tem seu próprio palpite? (A definir no plano de implementação).
-- **Interface de Grupos:** Criar uma tela para o usuário criar seu próprio bolão ou entrar em um bolão através de um código de acesso.
+
+**O Roadmap de Implementação (Bolão V2):**
+A implementação deste épico foi fatiada em 5 fases isoladas para garantir 100% de segurança e permitir aprendizado contínuo:
+- **Fase 1: O Alicerce Oculto (DB):** Criação das tabelas de `ligas`, `membros_liga` e migração silenciosa dos usuários atuais para a Liga Oficial. Criação das políticas de segurança RLS.
+- **Fase 2: Motor de Tela (UX & Palpites Híbridos):** UI para seleção de ligas e checkbox "Aplicar a todas as ligas" na hora do palpite.
+- **Fase 3: Regras Customizadas:** Refatoração da Trigger de pontos para ler as regras (ex: pontos por cravar) diretamente das configurações da liga do usuário.
+- **Fase 4: O Radar ESPN (Multi-Campeonatos):** Refatoração da Edge Function para consultar simultaneamente múltiplos IDs de campeonatos (Série A, Champions, Copa).
+- **Fase 5: O Cassino (Desafios 1x1):** Criação do sistema de apostas (Modo Gamificado valendo pontos e Modo Juiz valendo valores externos com "Termos de Uso" de isenção de responsabilidade).
 
 
 ---
