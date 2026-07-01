@@ -179,7 +179,7 @@ export function AuthForm({ onLogin }: { onLogin: (userId: string, nomeGuerra: st
         <div className="flex flex-col items-center gap-2">
           <h1 className="text-4xl font-black text-center text-white tracking-tight drop-shadow-md">Bolão da Firma</h1>
           <span className="text-xs font-bold text-teal-400 bg-teal-500/10 px-3 py-1 rounded-full border border-teal-500/20 shadow-inner">
-            {import.meta.env.VITE_APP_VERSION || 'v1.0.0'}
+            {import.meta.env.VITE_APP_VERSION || 'v1.1.0'}
           </span>
         </div>
       </div>
