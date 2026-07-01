@@ -51,11 +51,27 @@ serve(async (req) => {
             let mappedStatus = 'SCHEDULED';
             const espnStatus = event.status.type.name;
             const displayClock = event.status.displayClock;
+            const isLive = espnStatus.includes('IN_PROGRESS') || espnStatus.includes('HALF') || espnStatus.includes('OVERTIME') || espnStatus.includes('SHOOTOUT') || espnStatus.includes('EXTRA_TIME') || espnStatus === 'STATUS_PLAY_DELAYED';
+            const isFinished = espnStatus.includes('FINAL') || espnStatus.includes('FULL_TIME');
 
-            if (['STATUS_IN_PROGRESS', 'STATUS_FIRST_HALF', 'STATUS_SECOND_HALF'].includes(espnStatus)) {
+            if (isLive) {
                 mappedStatus = 'LIVE';
-            } else if (['STATUS_FINAL', 'STATUS_FULL_TIME'].includes(espnStatus)) {
+            } else if (isFinished) {
                 mappedStatus = 'FINISHED';
+            }
+
+            // Detect penalties / prorogation from ESPN data if available
+            // ESPN might set event.status.type.name to 'STATUS_FINAL_PEN' or similar
+            // or have shootoutScore inside competitor
+            let foi_para_prorogacao = espnStatus.includes('AET') || espnStatus.includes('PEN') || espnStatus.includes('SHOOTOUT') || espnStatus.includes('OVERTIME');
+            let foi_para_penaltis = espnStatus.includes('PEN') || espnStatus.includes('SHOOTOUT') || (homeTeam.shootoutScore !== undefined);
+            let vencedor_penaltis = null;
+
+            if (foi_para_penaltis && mappedStatus === 'FINISHED') {
+                const homePen = parseInt(homeTeam.shootoutScore || 0);
+                const awayPen = parseInt(awayTeam.shootoutScore || 0);
+                if (homePen > awayPen) vencedor_penaltis = 'A';
+                else if (awayPen > homePen) vencedor_penaltis = 'B';
             }
 
             return {
@@ -68,7 +84,10 @@ serve(async (req) => {
                 placar_oficial_a: mappedStatus !== 'SCHEDULED' ? parseInt(homeTeam.score) : null,
                 placar_oficial_b: mappedStatus !== 'SCHEDULED' ? parseInt(awayTeam.score) : null,
                 status: mappedStatus,
-                tempo_decorrido: displayClock || null
+                tempo_decorrido: displayClock || null,
+                foi_para_prorogacao,
+                foi_para_penaltis,
+                vencedor_penaltis
             };
         });
 

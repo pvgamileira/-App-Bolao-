@@ -51,61 +51,61 @@ export function LeaderboardPodium({ users, currentUserId, isLoading = false }: L
             <div className="flex justify-center items-end gap-2 sm:gap-4 mb-10 mt-8 h-64">
               {/* Second Place (Silver) */}
               {second && (
-                <div className="flex flex-col items-center flex-1 z-0">
-                  <div className="w-12 h-12 rounded-full bg-surface border-2 border-gray-400 flex items-center justify-center mb-[-20px] z-10 shadow-lg">
-                    <Medal size={20} className="text-gray-400" />
+                <div className="flex flex-col items-center flex-1 z-0 group">
+                  <div className="w-12 h-12 rounded-full bg-slate-900 border-2 border-slate-400 flex items-center justify-center mb-[-20px] z-10 shadow-lg transition-transform group-hover:scale-110">
+                    <Medal size={20} className="text-slate-400 drop-shadow-md" />
                   </div>
-                  <div className="bg-surface w-full rounded-t-2xl border-t border-gray-400 border-opacity-30 pt-8 pb-4 flex flex-col items-center h-36 justify-end px-2">
-                    <div className="w-16 h-16 rounded-full bg-[#1f364d] border-2 border-gray-400 flex items-center justify-center mb-2 overflow-hidden shadow-[0_0_15px_rgba(156,163,175,0.4)]">
+                  <div className="bg-slate-800/80 w-full rounded-t-2xl border-t border-slate-400/30 pt-8 pb-4 flex flex-col items-center h-36 justify-end px-2 backdrop-blur-sm transition-all duration-300 group-hover:bg-slate-700/80 group-hover:-translate-y-1">
+                    <div className="w-16 h-16 rounded-full bg-slate-900 border-2 border-slate-400 flex items-center justify-center mb-2 overflow-hidden shadow-[0_0_15px_rgba(148,163,184,0.4)]">
                       {second.avatarUrl ? (
                         <img src={second.avatarUrl} alt={second.nomeGuerra} className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-xl font-bold">{second.initials}</span>
+                        <span className="text-xl font-bold text-slate-200">{second.initials}</span>
                       )}
                     </div>
-                    <span className="font-semibold text-sm truncate w-full text-center">{second.nomeGuerra}</span>
-                    <span className="text-xs text-gray-400">{second.points} pts</span>
+                    <span className="font-semibold text-sm truncate w-full text-center text-slate-100">{second.nomeGuerra}</span>
+                    <span className="text-xs text-slate-400 font-bold">{second.points} pts</span>
                   </div>
                 </div>
               )}
 
               {/* First Place (Gold) */}
               {first && (
-                <div className="flex flex-col items-center flex-1 z-10">
-                  <div className="w-16 h-16 rounded-full bg-surface border-2 border-gold flex items-center justify-center mb-[-28px] z-20 shadow-[0_0_20px_rgba(255,214,0,0.5)]">
-                    <Medal size={28} className="text-gold" />
+                <div className="flex flex-col items-center flex-1 z-10 group">
+                  <div className="w-16 h-16 rounded-full bg-slate-900 border-2 border-amber-400 flex items-center justify-center mb-[-28px] z-20 shadow-[0_0_20px_rgba(251,191,36,0.5)] transition-transform group-hover:scale-110">
+                    <Medal size={28} className="text-amber-400 drop-shadow-md" />
                   </div>
-                  <div className="bg-surface w-full rounded-t-2xl border-t-2 border-gold border-opacity-50 pt-10 pb-4 flex flex-col items-center h-48 justify-end px-2 shadow-2xl relative">
-                    <div className="absolute inset-0 bg-gradient-to-b from-[rgba(255,214,0,0.1)] to-transparent rounded-t-2xl pointer-events-none"></div>
-                    <div className="w-20 h-20 rounded-full bg-[#1f364d] border-2 border-gold flex items-center justify-center mb-2 overflow-hidden shadow-[0_0_20px_rgba(255,214,0,0.6)] z-10">
+                  <div className="bg-gradient-to-t from-slate-800/90 to-slate-800/70 w-full rounded-t-2xl border-t-2 border-amber-400/60 pt-10 pb-4 flex flex-col items-center h-48 justify-end px-2 shadow-2xl relative backdrop-blur-md transition-all duration-300 group-hover:-translate-y-2 group-hover:shadow-[0_10px_40px_rgba(251,191,36,0.15)]">
+                    <div className="absolute inset-0 bg-gradient-to-b from-[rgba(251,191,36,0.1)] to-transparent rounded-t-2xl pointer-events-none transition-opacity group-hover:opacity-100 opacity-70"></div>
+                    <div className="w-20 h-20 rounded-full bg-slate-900 border-2 border-amber-400 flex items-center justify-center mb-2 overflow-hidden shadow-[0_0_20px_rgba(251,191,36,0.6)] z-10 group-hover:shadow-[0_0_25px_rgba(251,191,36,0.8)] transition-shadow">
                       {first.avatarUrl ? (
                         <img src={first.avatarUrl} alt={first.nomeGuerra} className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-2xl font-bold">{first.initials}</span>
+                        <span className="text-2xl font-bold text-slate-100">{first.initials}</span>
                       )}
                     </div>
-                    <span className="font-bold text-base truncate w-full text-center z-10">{first.nomeGuerra}</span>
-                    <span className="text-gold font-bold text-sm z-10">{first.points} pts</span>
+                    <span className="font-bold text-base truncate w-full text-center z-10 text-white">{first.nomeGuerra}</span>
+                    <span className="text-amber-400 font-bold text-sm z-10 drop-shadow-sm">{first.points} pts</span>
                   </div>
                 </div>
               )}
 
               {/* Third Place (Bronze) */}
               {third && (
-                <div className="flex flex-col items-center flex-1 z-0">
-                  <div className="w-10 h-10 rounded-full bg-surface border-2 border-[#CD7F32] flex items-center justify-center mb-[-16px] z-10 shadow-lg">
-                    <Medal size={16} className="text-[#CD7F32]" />
+                <div className="flex flex-col items-center flex-1 z-0 group">
+                  <div className="w-10 h-10 rounded-full bg-slate-900 border-2 border-[#CD7F32] flex items-center justify-center mb-[-16px] z-10 shadow-lg transition-transform group-hover:scale-110">
+                    <Medal size={16} className="text-[#CD7F32] drop-shadow-md" />
                   </div>
-                  <div className="bg-surface w-full rounded-t-2xl border-t border-[#CD7F32] border-opacity-30 pt-6 pb-4 flex flex-col items-center h-32 justify-end px-2">
-                    <div className="w-14 h-14 rounded-full bg-[#1f364d] border-2 border-[#CD7F32] flex items-center justify-center mb-2 overflow-hidden shadow-[0_0_10px_rgba(205,127,50,0.4)]">
+                  <div className="bg-slate-800/80 w-full rounded-t-2xl border-t border-[#CD7F32]/40 pt-6 pb-4 flex flex-col items-center h-32 justify-end px-2 backdrop-blur-sm transition-all duration-300 group-hover:bg-slate-700/80 group-hover:-translate-y-1">
+                    <div className="w-14 h-14 rounded-full bg-slate-900 border-2 border-[#CD7F32] flex items-center justify-center mb-2 overflow-hidden shadow-[0_0_10px_rgba(205,127,50,0.4)]">
                       {third.avatarUrl ? (
                         <img src={third.avatarUrl} alt={third.nomeGuerra} className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-lg font-bold">{third.initials}</span>
+                        <span className="text-lg font-bold text-slate-200">{third.initials}</span>
                       )}
                     </div>
-                    <span className="font-semibold text-xs truncate w-full text-center">{third.nomeGuerra}</span>
-                    <span className="text-xs text-gray-400">{third.points} pts</span>
+                    <span className="font-semibold text-xs truncate w-full text-center text-slate-100">{third.nomeGuerra}</span>
+                    <span className="text-xs text-slate-400 font-bold">{third.points} pts</span>
                   </div>
                 </div>
               )}
@@ -120,18 +120,18 @@ export function LeaderboardPodium({ users, currentUserId, isLoading = false }: L
                 return (
                   <div 
                     key={user.id} 
-                    className={`flex items-center p-4 rounded-xl border ${
+                    className={`flex items-center p-4 rounded-xl border transition-all duration-300 hover:scale-[1.01] ${
                       isCurrentUser 
-                        ? 'bg-[#0f291e] border-primary shadow-[0_0_15px_rgba(0,230,118,0.15)]' 
-                        : 'bg-surface border-gray-800'
+                        ? 'bg-teal-900/20 border-teal-500/30 shadow-[0_0_15px_rgba(20,184,166,0.1)]' 
+                        : `bg-slate-800/40 border-slate-700/30 hover:bg-slate-700/60 hover:border-slate-600/50 ${index % 2 === 0 ? 'bg-slate-800/20' : ''}`
                     }`}
                   >
-                    <div className={`w-8 font-bold text-lg ${isCurrentUser ? 'text-primary' : 'text-gray-400'}`}>
+                    <div className={`w-8 font-bold text-lg ${isCurrentUser ? 'text-teal-400' : 'text-slate-500'}`}>
                       {rank}
                     </div>
                     
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-4 ${
-                      isCurrentUser ? 'bg-primary text-background' : 'bg-[#1f364d] text-white'
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-4 border shadow-inner ${
+                      isCurrentUser ? 'bg-teal-500/20 text-teal-400 border-teal-500/50' : 'bg-slate-700 text-slate-300 border-slate-600'
                     }`}>
                       {user.avatarUrl ? (
                         <img src={user.avatarUrl} alt={user.nomeGuerra} className="w-full h-full rounded-full object-cover" />
@@ -140,11 +140,11 @@ export function LeaderboardPodium({ users, currentUserId, isLoading = false }: L
                       )}
                     </div>
                     
-                    <div className="flex-1 font-semibold truncate">
+                    <div className="flex-1 font-semibold truncate text-slate-200">
                       {user.nomeGuerra}
                     </div>
                     
-                    <div className={`font-bold ${isCurrentUser ? 'text-primary' : 'text-gray-300'}`}>
+                    <div className={`font-bold ${isCurrentUser ? 'text-teal-400' : 'text-slate-400'}`}>
                       {user.points} pts
                     </div>
                   </div>

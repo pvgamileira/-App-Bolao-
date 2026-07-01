@@ -52,7 +52,10 @@ function AppContent() {
           placarOficialB: j.placar_oficial_b,
           logoA: j.logo_a,
           logoB: j.logo_b,
-          tempoDecorrido: j.tempo_decorrido
+          tempoDecorrido: j.tempo_decorrido,
+          foiParaProrogacao: j.foi_para_prorogacao,
+          foiParaPenaltis: j.foi_para_penaltis,
+          vencedorPenaltis: j.vencedor_penaltis
         };
       });
       setMatches(formattedMatches);
@@ -129,7 +132,10 @@ function AppContent() {
                   status: computedStatus,
                   placarOficialA: updatedRow.placar_oficial_a,
                   placarOficialB: updatedRow.placar_oficial_b,
-                  tempoDecorrido: updatedRow.tempo_decorrido
+                  tempoDecorrido: updatedRow.tempo_decorrido,
+                  foiParaProrogacao: updatedRow.foi_para_prorogacao,
+                  foiParaPenaltis: updatedRow.foi_para_penaltis,
+                  vencedorPenaltis: updatedRow.vencedor_penaltis
                 };
               }
               return m;
